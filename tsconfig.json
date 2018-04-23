@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "typeRoots": [
+      "./types"
+    ],
+
+    /* preact */
+    "jsx": "react",
+    "jsxFactory": "h",
+
+    "sourceMap": true
+  }  
+}
