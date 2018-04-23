@@ -2,10 +2,8 @@ import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {IContentfulExtensionSdk} from 'contentful-ui-extensions-sdk'
 import {h, render, Component} from 'preact'
 
-import {SlugForm} from './slug-form'
-
 declare function require(module: string): any;
-const styles = require('./styles.scss')
+const styles = require('./style.scss')
 
 contentfulExtension.init((extension) => {
   render(<App {...extension} />,
@@ -55,9 +53,6 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
     const { fieldValue, parentSlug } = this.state
 
     return <div>
-      <SlugForm slug={fieldValue}
-        parentSlug={parentSlug}
-        onChange={this.onSlugChange.bind(this)} />
     </div>
   }
 }
