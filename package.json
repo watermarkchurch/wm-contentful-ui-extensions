@@ -4,7 +4,8 @@
   "description": "Watermark's library of Contentful UI extensions",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack.production.js",
+    "prepublishOnly": "npm run build"
   },
   "author": "",
   "license": "MIT",
