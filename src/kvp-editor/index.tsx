@@ -53,6 +53,7 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
     const { fieldValue, parentSlug } = this.state
 
     return <div>
+      <h2>KVP Editor</h2>
     </div>
   }
 }

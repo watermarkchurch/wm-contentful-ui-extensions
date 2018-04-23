@@ -1,0 +1,6 @@
+{
+  "id": "slug-generator",
+  "name": "Slug generator for pages that are subordinate to other pages",
+  "src": "https://watermarkresources.com/contentful/extensions/slug-generator",
+  "fieldTypes": ["Symbol"]
+}
