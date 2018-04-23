@@ -1,0 +1,218 @@
+#!/bin/bash
+
+COLOR_NC='\033[0m' # No Color
+COLOR_GRAY='\033[1;30m'
+COLOR_RED='\033[0;31m'
+COLOR_LCYAN='\033[1;36m'
+COLOR_YELLOW='\033[1;33m'
+COLOR_LGREEN='\033[1;32m'
+
+logv() {
+  [[ -z "$VERBOSE" ]] && return 0;
+
+  local msg=$(echo "$@" | sed "s/$CONTENTFUL_MANAGEMENT_TOKEN/\*\*\*\*\*/" )
+  >&2 echo -e "${COLOR_GRAY}$msg${COLOR_NC}" || true
+}
+
+logerr() {
+  >&2 echo -e "${COLOR_RED}$@${COLOR_NC}"
+}
+
+curlv() {
+  logv "curl" $@
+  curl "$@"
+}
+
+execv() {
+  logv "$@"
+  "$@"
+}
+
+## *** Argument Parsing & validation ***
+
+usage() {
+  echo "$0 <command> [opts]
+  Commands:
+    create
+
+    update
+
+  Flags:" && \
+    grep " .)\ #" $0
+  echo "
+  Examples:" && \
+    grep -i "#\ example:" $0 | awk '{$1=""; $2=""; print "  "$0}'
+}
+
+parse_args() {
+  OPTIND=1
+  local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  case "$s" in
+    create|help|h|\?)
+      export subcommand=$s
+      OPTIND=2
+      ;;
+  esac
+
+  # Parse flags
+  while getopts ":hyvse:a:" arg; do
+    case $arg in
+      y) # Yes - skip prompts
+        export YES="-y"
+        ;;
+      s) # Contentful Space ID - overrides env var CONTENTFUL_SPACE_ID
+        export CONTENTFUL_SPACE_ID=$OPTARG
+        ;;
+      a) # Contentful Mgmt Token - overrides env var CONTENTFUL_MANAGEMENT_TOKEN
+        export CONTENTFUL_MANAGEMENT_TOKEN=$OPTARG
+        ;;
+      e) # Contentful environment ID - overrides env var CONTENTFUL_ENVIRONMENT
+        export CONTENTFUL_ENVIRONMENT=$OPTARG
+        ;;
+      v) # Verbose mode - extra output
+        export VERBOSE=true
+        ;;
+      h) # Display help.
+        usage
+        exit 0
+        ;;
+      *)
+        logerr "Unknown option: '$OPTARG'"
+        usage
+        exit -1
+        ;;
+    esac
+  done
+
+  export OPTIND
+}
+
+parse_args $@ && shift $(($OPTIND - 1))
+  # If they put args before the command like 'bin/contentful -s 1xab migrate -y', try parsing again
+[[ -z "$subcommand" ]] && parse_args $@ && shift $(($OPTIND - 1))
+
+require_environment() {
+
+  CONTENTFUL_CLI='contentful'
+  command -v contentful >/dev/null 2>&1 || CONTENTFUL_CLI=''
+
+  if [[ -z "$CONTENTFUL_CLI" ]]; then
+    if [[ ! -f node_modules/.bin/contentful ]]; then
+      command -v npm >/dev/null 2>&1 || (logerr "I require 'npm' but it's not installed.  Please install nodejs."; exit -1)
+      execv npm install
+      [[ -f node_modules/.bin/contentful ]] || (logerr "Failed installing node modules - please ensure contentful CLI is installed"; exit -1)
+    fi
+    CONTENTFUL_CLI='node_modules/.bin/contentful'
+  fi
+
+  if [[ -z "$CONTENTFUL_MANAGEMENT_TOKEN" ]]; then
+    if [[ ! -f ~/.contentfulrc.json || -z "$(cat ~/.contentfulrc.json | grep cmaToken)" ]]; then
+      $CONTENTFUL_CLI login
+    fi
+  fi
+
+  if [[ -z "$CONTENTFUL_SPACE_ID" ]]; then
+    if [[ ! -f ~/.contentfulrc.json || -z "$(cat ~/.contentfulrc.json | grep activeSpaceId)" ]]; then
+      $CONTENTFUL_CLI space use
+    fi
+  fi
+}
+
+## *** Utility functions ***
+
+confirm() {
+  [[ -z "$2" ]] && [[ ! -z "$YES" ]] && logv "$1 (y/n): confirmed by -y flag" && return 0;
+
+  while true; do
+    if [[ -z "$2" ]]; then
+      read -p $'\033[1;36m'"$1"' (y/n): '$'\033[0m' yn
+    else
+      # double confirm - extra dangerous.
+      read -p $'\033[0;31m'"$1"' (y/n): '$'\033[0m' yn
+    fi
+    case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) echo "Please answer yes or no.";;
+    esac
+  done
+}
+
+get_space_name() {
+  curlv -s https://api.contentful.com/spaces/$1?access_token=$CONTENTFUL_MANAGEMENT_TOKEN | jq -r .name | tr '[:upper:]' '[:lower:]'
+}
+
+# Man I wish I understood sed... https://stackoverflow.com/a/29060802
+# $1 File
+# $2 Find
+# $3 Replace / Append
+replace_append() {
+  if grep -q "^$2" "$1"
+  then
+      sed -i.bak "s/^$2.*$/$3/" "$1"
+  else
+      echo "\n$3" >> "$1"
+  fi
+}
+
+latest_version() {
+  cat package.json | grep "version" | grep -Eo '\d.\d'
+}
+
+select_package() {
+  local packages=($(for D in src/*/index.*; do echo $(basename $(dirname $D)); done)) 
+  PS3="Select which extension to create in the space: "
+  select package in "${packages[@]}"
+  do
+    if [[ ! -z "$package" ]]; then
+      echo "$package"
+      break;
+    fi
+  done
+}
+
+set -e
+
+# *** Commands ***
+
+# Example: bin/contentful new_env -e gordon_dev
+create() {
+  # command -v jq >/dev/null 2>&1 || (logerr "I require 'jq' but it's not installed.  Please run 'brew install jq'"; exit -1)
+
+  require_environment
+  space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
+
+  local extension="$1"
+  [[ -z "$extension" ]] && extension=$(select_package)
+  
+  local extension_name=$(echo "$extension" | awk -F@ '{ print $1 }')
+  local extension_version=$(echo "$extension" | awk -F@ '{ print $2 }')
+  [[ -z "$extension_version" ]] && extension_version=$(latest_version)
+  extension="$extension_name@$extension_version"
+
+  echo -e "${COLOR_LCYAN}This will create the extension ${COLOR_YELLOW}$extension${COLOR_LCYAN} in $space_name${COLOR_NC}"
+  confirm "Continue?" || exit -1
+  export YES='-y' # don't keep bugging the user
+
+  cat index.template.html | \
+    sed "s,\$extension_path,https://cdn.jsdelivr.net/npm/wm-contentful-ui-extensions@${extension_version}/dist/${extension_name},g" \
+    > src/$extension_name/${extension}.html
+
+  pushd src/$extension_name
+  $CONTENTFUL_CLI extension create --srcdoc ${extension}.html
+  popd
+}
+
+case $subcommand in 
+  create)
+    create $@
+    ;;
+  help|h|\?)
+    usage
+    ;;
+  *)
+    logerr "Unknown command: '$1'"
+    usage
+    exit -1
+    ;;
+esac
