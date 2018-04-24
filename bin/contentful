@@ -35,7 +35,7 @@ usage() {
   Commands:
     create
 
-    update
+    template
 
   Flags:" && \
     grep " .)\ #" $0
@@ -48,14 +48,14 @@ parse_args() {
   OPTIND=1
   local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$s" in
-    create|help|h|\?)
+    create|template|help|h|\?)
       export subcommand=$s
       OPTIND=2
       ;;
   esac
 
   # Parse flags
-  while getopts ":hyvse:a:" arg; do
+  while getopts ":hyvse:a:o:" arg; do
     case $arg in
       y) # Yes - skip prompts
         export YES="-y"
@@ -68,6 +68,9 @@ parse_args() {
         ;;
       e) # Contentful environment ID - overrides env var CONTENTFUL_ENVIRONMENT
         export CONTENTFUL_ENVIRONMENT=$OPTARG
+        ;;
+      o) # Output directory
+        export OUTDIR=$OPTARG
         ;;
       v) # Verbose mode - extra output
         export VERBOSE=true
@@ -194,18 +197,44 @@ create() {
   confirm "Continue?" || exit -1
   export YES='-y' # don't keep bugging the user
 
-  cat index.template.html | \
-    sed "s,\$extension_path,https://cdn.jsdelivr.net/npm/wm-contentful-ui-extensions@${extension_version}/dist/${extension_name},g" \
-    > src/$extension_name/${extension}.html
+  template "$extension"
 
   pushd src/$extension_name
   $CONTENTFUL_CLI extension create --srcdoc ${extension}.html
   popd
 }
 
+template() {
+  if [[ "$1" == "all" ]]; then
+    for D in src/*/index.*; do
+      template $(basename $(dirname $D))
+    done
+    return 0;
+  fi
+
+  local extension="$1"
+  [[ -z "$extension" ]] && extension=$(select_package)
+  
+  local extension_name=$(echo "$extension" | awk -F@ '{ print $1 }')
+  local extension_version=$(echo "$extension" | awk -F@ '{ print $2 }')
+  [[ -z "$extension_version" ]] && extension_version="latest"
+  extension="$extension_name@$extension_version"
+
+  local outdir="$OUTDIR"
+  [[ -z "$outdir" ]] && outdir="src/$extension_name"
+
+  logv "writing $outdir/${extension}.html"
+  cat index.template.html | \
+    sed "s,\$extension_path,https://cdn.jsdelivr.net/npm/wm-contentful-ui-extensions@${extension_version}/dist/${extension_name},g" \
+    > "$outdir/${extension}.html"
+}
+
 case $subcommand in 
   create)
     create $@
+    ;;
+  template)
+    template $@
     ;;
   help|h|\?)
     usage
