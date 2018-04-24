@@ -162,6 +162,10 @@ latest_version() {
   cat package.json | grep "version" | grep -Eo '\d.\d'
 }
 
+all_versions() {
+  npm view wm-contentful-ui-extensions versions --json | jq -r .[]
+}
+
 select_package() {
   local packages=($(for D in src/*/index.*; do echo $(basename $(dirname $D)); done)) 
   PS3="Select which extension to create in the space: "
@@ -206,8 +210,18 @@ create() {
 
 template() {
   if [[ "$1" == "all" ]]; then
+    for V in $(all_versions); do
+      for D in src/*/index.*; do
+        local nm=$(basename $(dirname $D))
+        logv "trying $nm@$V"
+        template "$nm@$V"
+      done
+    done
+
     for D in src/*/index.*; do
-      template $(basename $(dirname $D))
+      local nm=$(basename $(dirname $D))
+      logv "trying $nm@latest"
+      template "$nm"
     done
     return 0;
   fi
