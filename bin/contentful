@@ -10,7 +10,10 @@ COLOR_LGREEN='\033[1;32m'
 logv() {
   [[ -z "$VERBOSE" ]] && return 0;
 
-  local msg=$(echo "$@" | sed "s/$CONTENTFUL_MANAGEMENT_TOKEN/\*\*\*\*\*/" )
+  local msg=$(echo "$@")
+  if [[ ! -z "$CONTENTFUL_MANAGEMENT_TOKEN" ]]; then
+    msg=$(echo "$msg" | sed "s/$CONTENTFUL_MANAGEMENT_TOKEN/\*\*\*\*\*/")
+  fi
   >&2 echo -e "${COLOR_GRAY}$msg${COLOR_NC}" || true
 }
 
@@ -94,6 +97,7 @@ parse_args $@ && shift $(($OPTIND - 1))
   # If they put args before the command like 'bin/contentful -s 1xab migrate -y', try parsing again
 [[ -z "$subcommand" ]] && parse_args $@ && shift $(($OPTIND - 1))
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 require_environment() {
 
   CONTENTFUL_CLI='contentful'
@@ -213,14 +217,12 @@ template() {
     for V in $(all_versions); do
       for D in src/*/index.*; do
         local nm=$(basename $(dirname $D))
-        logv "trying $nm@$V"
         template "$nm@$V"
       done
     done
 
     for D in src/*/index.*; do
       local nm=$(basename $(dirname $D))
-      logv "trying $nm@latest"
       template "$nm"
     done
     return 0;
@@ -236,7 +238,7 @@ template() {
 
   local outdir="$OUTDIR"
   [[ -z "$outdir" ]] && outdir="src/$extension_name"
-
+  
   logv "writing $outdir/${extension}.html"
   cat index.template.html | \
     sed "s,\$extension_path,https://cdn.jsdelivr.net/npm/wm-contentful-ui-extensions@${extension_version}/dist/${extension_name},g" \
