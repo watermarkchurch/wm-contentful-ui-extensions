@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.production.js",
+    "test": "echo \"TODO\"",
+    "lint": "echo \"TODO\"",
     "prepublishOnly": "npm run build"
   },
   "author": "",
