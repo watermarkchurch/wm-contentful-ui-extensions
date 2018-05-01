@@ -3,6 +3,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const HtmlWebpackInlineSVGPlugin = require('html-webpack-inline-svg-plugin')
 const webpack = require('webpack')
+const fs = require('fs-extra')
 
 const pkg = require('./package.json')
 // create version specifiers ['0', '0.1', '0.1.1']
@@ -23,7 +24,7 @@ module.exports = merge(common, {
         // after emit, copy the injected HTML to the proper place in the docs folder
         // for github pages
         compiler.hooks.afterEmit.tapPromise('AfterEmitPlugin', (compilation) => {
-          return Promise.all(Object.keys(entry).map(async (chunkName) => {
+          return Promise.all(Object.keys(common.entry).map(async (chunkName) => {
             await Promise.all(versions.map(v => 
               fs.copy(`${chunkName}.html`, `docs/${v}/${chunkName}.html`, {overwrite: true})
             ))

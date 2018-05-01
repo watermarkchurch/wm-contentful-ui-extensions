@@ -2,3 +2,5 @@ node_modules
 dist
 src/*/*.html
 !/.template.html
+
+docs/**/*.html

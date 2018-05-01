@@ -55,10 +55,6 @@ jobs:
       - run: npm run build
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - run: npm publish
-
-      - run: bin/contentful -v template -o docs all; ls docs
-      - run: git config --global user.name "CircleCI"; git config --global user.email "dev@watermark.org"
-      - run: git add docs && git commit -m "generating new HTML files\n\n`git diff --name-only --diff-filter=A --cached`" && git push
 workflows:
   version: 2
   build_and_deploy:

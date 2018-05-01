@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.production.js",
+    "version": "webpack --config webpack.production.js && git add -f docs/**/*.html",
     "test": "echo \"TODO\"",
     "lint": "echo \"TODO\"",
     "prepublishOnly": "npm run build"
