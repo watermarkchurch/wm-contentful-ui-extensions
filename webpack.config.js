@@ -2,22 +2,32 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const glob = require("glob")
 const path = require("path")
+const fs = require('fs-extra')
+
+const pkg = require('./package.json')
  
-// options is optional 
+// Create an entry point for each 'index.*' file in src/, where there's also a 'extension.json'.
 const entryPoints = glob.sync("src/*/index.{t,j}s*(x)")
 const entry = entryPoints.reduce((hash, file) => {
-  hash[path.basename(path.dirname(file))] = path.resolve(file)
+  if (fs.existsSync(path.join(path.dirname(file), 'extension.json'))) {
+    hash[path.basename(path.dirname(file))] = path.resolve(file)
+  }
   return hash
 }, {})
 
-const htmlPlugins = Object.keys(entry).map(chunkName => {
-  return new HtmlWebpackPlugin({
+const htmlPlugins = Object.keys(entry).map(chunkName => 
+  new HtmlWebpackPlugin({
     filename: `${chunkName}.html`,
     chunks: [chunkName],
     template: 'index.template.html',
+    templateParameters: {
+      chunkName: chunkName,
+      version: pkg.version,
+      title: `${chunkName}@${pkg.version}`
+    },
     inlineSource: '.(js|css)$' // embed all javascript and css inline
   })
-})
+)
 
 module.exports = {
   entry: entry,
@@ -67,4 +77,4 @@ module.exports = {
       chunkFilename: "dist/[id].css"
     })
   ]
-}
+} 
