@@ -13,4 +13,18 @@ describe('<kvp-form />', () => {
     // assert
     expect(rendered.text()).to.include('Form')
   })
+
+  it('renders two inputs for entering a new kvp')
+
+  it('renders a table for displaying the pairs')
+
+  it('adds a new pair to the table on button press')
+
+  it('adds a new pair to the table on enter')
+
+  it('deletes a pair from the table on clicking the X button')
+
+  it('puts the deleted KVP into the inputs')
+
+  it('reorders the inputs with drag-and-drop')
 })
