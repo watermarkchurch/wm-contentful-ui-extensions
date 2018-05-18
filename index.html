@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" href="https://contentful.github.io/ui-extensions-sdk/cf-extension.css">
+    <script src="https://contentful.github.io/ui-extensions-sdk/cf-extension-api.js"></script>
+    <style>
+       #wm-logo {
+        width: 16px;
+        position: absolute;
+        right: 0;
+        top: 0;
+       }
+    </style>
+    <title><%= title %></title>
+  </head>
+  <body>
+    <div id="wm-logo" title="DEV!!"><img inline src="images/logo-blue.svg"></img></div>
+    
+    <div id="react-root"></div>
+
+    <script type="text/javascript">
+      var hash = window.location.hash.replace(/^\#/, '');
+      hash = hash || 'kvp-editor'
+
+      var s = document.createElement( 'script' );
+      s.setAttribute( 'src', '/dist/' + hash + '/index.js' );
+      document.body.appendChild( s );
+
+      var css = document.createElement( 'link' );
+      css.setAttribute('rel', 'stylesheet');
+      css.setAttribute('href', '/dist/' + hash + '/style.css');
+      document.head.appendChild(css);
+    </script>
+  </body>
+</html>

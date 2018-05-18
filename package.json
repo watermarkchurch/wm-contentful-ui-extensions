@@ -6,6 +6,8 @@
   "scripts": {
     "build": "webpack --config webpack.production.js",
     "version": "webpack --config webpack.production.js && git add -f docs/**/*.html && git add -f docs/*.html",
+    "serve": "webpack-dev-server -d --config ./webpack.config.js --https",
+    "enable-dev": "bin/contentful dev",
     "test": "echo \"TODO\"",
     "lint": "echo \"TODO\"",
     "prepublishOnly": "npm run build"

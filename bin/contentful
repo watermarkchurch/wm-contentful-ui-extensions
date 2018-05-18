@@ -51,7 +51,7 @@ parse_args() {
   OPTIND=1
   local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$s" in
-    create|template|help|h|\?)
+    create|delete|dev|template|help|h|\?)
       export subcommand=$s
       OPTIND=2
       ;;
@@ -109,7 +109,7 @@ require_environment() {
       execv npm install
       [[ -f node_modules/.bin/contentful ]] || (logerr "Failed installing node modules - please ensure contentful CLI is installed"; exit -1)
     fi
-    CONTENTFUL_CLI='node_modules/.bin/contentful'
+    CONTENTFUL_CLI=`pwd`'/node_modules/.bin/contentful'
   fi
 
   if [[ -z "$CONTENTFUL_MANAGEMENT_TOKEN" ]]; then
@@ -208,7 +208,39 @@ create() {
   template "$extension"
 
   pushd src/$extension_name
-  $CONTENTFUL_CLI extension create --srcdoc ${extension}.html
+  $CONTENTFUL_CLI extension create --id "${extension_name}" --srcdoc "${extension}.html"
+  popd
+}
+
+delete() {
+  require_environment
+  space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
+
+  local extension="$1"
+  [[ -z "$extension" ]] && extension=$(select_package)
+  
+  local extension_name=$(echo "$extension" | awk -F@ '{ print $1 }')
+
+  echo -e "${COLOR_LCYAN}This will delete the extension ${COLOR_YELLOW}$extension_name${COLOR_LCYAN} in $space_name${COLOR_NC}"
+  confirm "Continue?" || exit -1
+
+  $CONTENTFUL_CLI extension delete --id "${extension_name}" --force
+}
+
+dev() {
+  require_environment
+  space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
+
+  local extension="$1"
+  [[ -z "$extension" ]] && extension=$(select_package)
+  
+  local extension_name="$(echo "$extension" | awk -F@ '{ print $1 }')"
+
+  echo -e "${COLOR_LCYAN}This will enable dev server on localhost:8080 for the extension ${COLOR_YELLOW}$extension_name-$USER-dev${COLOR_LCYAN} in $space_name${COLOR_NC}"
+  confirm "Continue?" || exit -1
+
+  pushd src/$extension_name
+  $CONTENTFUL_CLI extension create --id "${extension_name}-$USER-dev" --src "https://localhost:8080#${extension_name}"
   popd
 }
 
@@ -248,6 +280,12 @@ template() {
 case $subcommand in 
   create)
     create $@
+    ;;
+  delete)
+    delete $@
+    ;;
+  dev)
+    dev $@
     ;;
   template)
     template $@
