@@ -1,7 +1,7 @@
-import {h} from 'preact'
-import {shallow} from 'preact-render-spy'
 import {expect} from 'chai'
 import {} from 'mocha'
+import {h} from 'preact'
+import {shallow} from 'preact-render-spy'
 
 import {KVPForm} from './kvp-form'
 

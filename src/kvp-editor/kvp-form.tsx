@@ -1,11 +1,7 @@
-import {h, render, Component} from 'preact'
+import {Component, h, render} from 'preact'
 
-interface IProps {}
-
-interface IState {}
-
-export class KVPForm extends Component<IProps, IState> {
-  render() {
+export class KVPForm extends Component<{}, {}> {
+  public render() {
     return (<h1>Form</h1>)
   }
 }
