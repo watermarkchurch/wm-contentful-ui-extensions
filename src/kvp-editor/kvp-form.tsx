@@ -27,13 +27,15 @@ export class KVPForm extends Component<IProps, IState> {
   public render() {
     const {items} = this.props
 
-    return <div>
-        <div className="kvp-form__header">Enter tags as key-value pairs</div>
+    return <div className="kvp-form">
         <div className="kvp-form__form">
-          <form name="kvp-form">
-            <input type="text" name="key" id="key" onChange={this.setKey} value={this.state.key}></input>
-            <input type="text" name="value" id="value" onChange={this.setVal} value={this.state.value}></input>
-            <input type="submit" id="add" value="+" onClick={this.addRow}></input>
+          <form >
+            <input className="cf-form-input" type="text" id="key"
+              onChange={this.setKey} value={this.state.key}></input>
+            <span class="divider">|</span>
+            <input className="cf-form-input" type="text" id="value"
+              onChange={this.setVal} value={this.state.value}></input>
+            <button className="cf-btn-primary" type="submit" id="add" onClick={this.addRow}>+</button>
             {this.state.errors && this.state.errors.map((e) =>
               <div class="error">{e}</div>,
             )}
@@ -44,9 +46,10 @@ export class KVPForm extends Component<IProps, IState> {
             <tbody>
               {items && items.map((item) =>
                   <tr className="kvp-form__table__row">
-                    <td><button class="delete" onClick={() => this.deleteRow(item)}>X</button></td>
-                    <td>{item.key}</td>
-                    <td>{item.value}</td>
+                    <td className="text">{item.key}</td>
+                    <td class="divider">|</td>
+                    <td className="text">{item.value}</td>
+                    <td><button className="cf-btn-secondary delete" onClick={() => this.deleteRow(item)}>X</button></td>
                   </tr>,
                 )}
             </tbody>

@@ -1,0 +1,55 @@
+
+.kvp-form {
+  
+  &__form {
+    width: 50%;
+    display: inline-block;
+    vertical-align: top;
+
+    button {
+      margin-left: 4%;
+      max-width: 12%;
+    }
+  }
+
+  &__table {
+    width: 50%;
+    display: inline-block;
+    vertical-align: top;
+
+    table {
+      width: 100%;
+    }
+
+    &__row {
+      .delete {
+        float:right;
+      }
+
+      td.text {
+        border-bottom: 1px solid #dee2e6;
+        margin: 0px 8px;
+
+        &:first-child {
+          text-transform: uppercase;
+          text-align: right;
+        }
+      }
+    }
+
+    .divider {
+      text-align: center;
+      color: #dee2e6;
+    }
+  }
+
+  .cf-form-input {
+    width: 40%;
+    display: inline-block;
+    padding: 2px;
+  }
+
+  .error {
+    color: red;    
+  }
+}

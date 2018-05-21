@@ -44,7 +44,6 @@ export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
     const { fieldValue} = this.state
 
     return <div>
-      <h2>KVP Editor</h2>
       <KVPForm
         items={fieldValue}
         onRowAdded={this.onRowAdded}
