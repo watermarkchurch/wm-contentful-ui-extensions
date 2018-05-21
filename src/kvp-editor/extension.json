@@ -1,6 +1,6 @@
 {
-  "id": "slug-generator",
-  "name": "Slug generator for pages that are subordinate to other pages",
-  "src": "https://watermarkresources.com/contentful/extensions/slug-generator",
-  "fieldTypes": ["Symbol"]
+  "id": "kvp-editor",
+  "name": "A key-value pair editor storing pairs in a JSON blob",
+  "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
+  "fieldTypes": ["Object"]
 }

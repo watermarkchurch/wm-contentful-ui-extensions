@@ -58,7 +58,7 @@ parse_args() {
   esac
 
   # Parse flags
-  while getopts ":hyvse:a:o:" arg; do
+  while getopts ":hyvs:e:a:o:" arg; do
     case $arg in
       y) # Yes - skip prompts
         export YES="-y"
@@ -116,12 +116,14 @@ require_environment() {
     if [[ ! -f ~/.contentfulrc.json || -z "$(cat ~/.contentfulrc.json | grep cmaToken)" ]]; then
       $CONTENTFUL_CLI login
     fi
+    CONTENTFUL_MANAGEMENT_TOKEN="$(cat ~/.contentfulrc.json | jq -r '.cmaToken')"
   fi
 
   if [[ -z "$CONTENTFUL_SPACE_ID" ]]; then
     if [[ ! -f ~/.contentfulrc.json || -z "$(cat ~/.contentfulrc.json | grep activeSpaceId)" ]]; then
       $CONTENTFUL_CLI space use
     fi
+    CONTENTFUL_SPACE_ID="$(cat ~/.contentfulrc.json | grep activeSpaceId)"
   fi
 }
 
@@ -171,7 +173,7 @@ all_versions() {
 }
 
 select_package() {
-  local packages=($(for D in src/*/index.*; do echo $(basename $(dirname $D)); done)) 
+  local packages=($(for D in src/*/extension.json; do echo $(basename $(dirname $D)); done)) 
   PS3="Select which extension to create in the space: "
   select package in "${packages[@]}"
   do
@@ -205,10 +207,9 @@ create() {
   confirm "Continue?" || exit -1
   export YES='-y' # don't keep bugging the user
 
-  template "$extension"
-
   pushd src/$extension_name
-  $CONTENTFUL_CLI extension create --id "${extension_name}" --srcdoc "${extension}.html"
+  $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" --id "${extension_name}" \
+    --src "https://watermarkchurch.github.io/wm-contentful-ui-extensions/${extension_version}/${extension_name}.html"
   popd
 }
 
@@ -242,39 +243,6 @@ dev() {
   pushd src/$extension_name
   $CONTENTFUL_CLI extension create --id "${extension_name}-$USER-dev" --src "https://localhost:8080#${extension_name}"
   popd
-}
-
-template() {
-  if [[ "$1" == "all" ]]; then
-    for V in $(all_versions); do
-      for D in src/*/index.*; do
-        local nm=$(basename $(dirname $D))
-        template "$nm@$V"
-      done
-    done
-
-    for D in src/*/index.*; do
-      local nm=$(basename $(dirname $D))
-      template "$nm"
-    done
-    return 0;
-  fi
-
-  local extension="$1"
-  [[ -z "$extension" ]] && extension=$(select_package)
-  
-  local extension_name=$(echo "$extension" | awk -F@ '{ print $1 }')
-  local extension_version=$(echo "$extension" | awk -F@ '{ print $2 }')
-  [[ -z "$extension_version" ]] && extension_version="latest"
-  extension="$extension_name@$extension_version"
-
-  local outdir="$OUTDIR"
-  [[ -z "$outdir" ]] && outdir="src/$extension_name"
-  
-  logv "writing $outdir/${extension}.html"
-  cat index.template.html | \
-    sed "s,\$extension_path,https://cdn.jsdelivr.net/npm/wm-contentful-ui-extensions@${extension_version}/dist/${extension_name},g" \
-    > "$outdir/${extension}.html"
 }
 
 case $subcommand in 
