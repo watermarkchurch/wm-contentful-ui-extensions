@@ -23,6 +23,14 @@ declare module 'contentful-ui-extensions-sdk' {
     onIsDisabledChanged(locale: string | null, cb: () => void): () => void
   }
 
+  export interface ILink<T extends string> {
+    sys: {
+      type: "Link",
+      linkType: T,
+      id: string
+    }
+  }
+
   export interface ICurrentField {
     /** The ID of a field is defined in an entry's content type.  */
     id: string,
@@ -82,48 +90,18 @@ declare module 'contentful-ui-extensions-sdk' {
   }
 
   export interface IEntrySys {
-    space: {
-      sys: {
-        type: "Link",
-        linkType: "Space",
-        id: string
-      }
-    },
+    space: ILink<'Space'>,
     id: string,
     type: "Entry",
     createdAt: string,
-    environment: {
-      sys: {
-        type: "Link",
-        linkType: "Environment",
-        id: string
-      }
-    },
-    createdBy: {
-      sys: {
-        type: "Link",
-        linkType: "User",
-        id: string
-      }
-    },
+    environment?: ILink<'Environment'>,
+    createdBy: ILink<'User'>,
     publishedCounter: number,
-    publishedBy: {
-      sys: {
-        type: "Link",
-        linkType: "User",
-        id: string
-      }
-    },
+    publishedBy: ILink<'User'>,
     publishedVersion: number,
     firstPublishedAt: string,
     publishedAt: string,
-    contentType: {
-      sys: {
-        type: "Link",
-        linkType: "ContentType",
-        id: string
-      }
-    },
+    contentType: ILink<'ContentType'>,
     updatedAt: string,
     version: number
   }
@@ -169,13 +147,7 @@ declare module 'contentful-ui-extensions-sdk' {
     contentType: {
       name: string,
       sys: {
-        space: {
-          sys: {
-            type: FieldType,
-            linkType: 'Space',
-            id: string
-          }
-        }
+        space: ILink<'Space'>,
         id: string,
         type: 'ContentType',
         createdAt: string,

@@ -1,5 +1,5 @@
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
-import {IContentfulExtensionSdk} from 'contentful-ui-extensions-sdk'
+import {IContentfulExtensionSdk, ILink} from 'contentful-ui-extensions-sdk'
 import {Component, h, render} from 'preact'
 
 import { pathJoin, trimStart } from '../lib/utils'
@@ -90,14 +90,7 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
       const subpages = fields.subpages.getValue()
       if (subpages && subpages.length > 0) {
 
-        const { space, environment } = this.props.entry.getSys()
-        const env = environment ? `/environments/${environment.sys.id}` : ''
-        warnings.push(`Be sure to update these other pages too! Their slugs are going to be wrong:\n  ` +
-          subpages.map((link: any) =>
-            `<a href="https://app.contentful.com/spaces/${space.sys.id}${env}` +
-              `/entries/${link.sys.id}">${link.sys.id}</a>`)
-            .join(', <br/>'),
-        )
+        warnings.push(...await this.checkSubpages(subpages))
       }
     }
 
@@ -107,6 +100,43 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
     })
 
     return errors.length == 0
+  }
+
+  private async checkSubpages(subpages: Array<ILink<'Entry'>>): Promise<string[]> {
+    const {fieldValue} = this.state
+    const { space, environment } = this.props.entry.getSys()
+    const env = environment ? `/environments/${environment.sys.id}` : ''
+
+    const entries = await this.props.space.getEntries({
+      'content_type': 'page',
+      'sys.id[in]': subpages.map((link) => link.sys.id).join(','),
+    })
+
+    const warnings: string[] = entries.items.filter((i) => i).map((page) => {
+      if (!page || !page.fields || !page.fields.slug || !page.fields.slug['en-US']) {
+        return null
+      }
+      const slug = page.fields.slug['en-US'] as string
+      if (slug.startsWith(fieldValue)) {
+        console.log(`subpage ${slug} is good`)
+        return null
+      }
+
+      console.log('bad page', page.fields)
+
+      const title = page.fields.title && page.fields.title['en-US']
+      return `<a href="https://app.contentful.com/spaces/${space.sys.id}${env}` +
+        `/entries/${page.sys.id}" target="_blank">${title || page.sys.id}</a>`
+    }).filter((w) => w)
+
+    if (warnings.length == 0) {
+      return warnings
+    }
+
+    return [
+      `Be sure to update these subpages! Their slugs are wrong:<br/>  ` +
+      warnings.join(',<br/>')]
+
   }
 
   private async onMount(): Promise<void> {
