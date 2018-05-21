@@ -5,7 +5,7 @@ export interface ISlugFormProps {
   slug: string
   parentSlug: string
 
-  onChange(this: SlugForm, event: { oldValue: string, newValue: string }): void
+  onChange?: (this: SlugForm, event: { oldValue: string, newValue: string }) => void
 }
 
 export class SlugForm extends Component<ISlugFormProps, {value: string}> {
