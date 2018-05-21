@@ -9,7 +9,6 @@ declare function require(module: string): any
 const styles = require('./styles.scss')
 
 contentfulExtension.init((extension) => {
-  console.log('Init!')
   render(<App {...extension} />,
     document.getElementById('react-root'))
 })
@@ -32,6 +31,12 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
     this.setState({
       fieldValue: this.props.field.getValue(),
       errors: [],
+    })
+
+    this.props.field.onValueChanged(async (newValue) => {
+      this.setState({
+        fieldValue: newValue,
+      })
     })
 
     this.onMount().catch((err) => {
