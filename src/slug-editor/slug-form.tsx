@@ -10,6 +10,14 @@ export interface ISlugFormProps {
 
 export class SlugForm extends Component<ISlugFormProps, {value: string}> {
 
+  constructor() {
+    super()
+
+    this.onFocusGained = this.onFocusGained.bind(this)
+    this.onFocusLost = this.onFocusLost.bind(this)
+    this.demandFocus = this.demandFocus.bind(this)
+  }
+
   public componentDidMount() {
     this.setState({
       value: this.props.slug,
@@ -24,21 +32,27 @@ export class SlugForm extends Component<ISlugFormProps, {value: string}> {
     }
 
     return (
-      <div id="slugForm" class="cf-form-input">
+      <div id="slugForm" class="cf-form-input" onClick={this.demandFocus}>
         { parentSlug && <span id="parent">{parentSlug}/</span>}
-        <span id="slug" contentEditable onFocus={this.onFocusGained.bind(this)} onBlur={this.onFocusLost.bind(this)}>
+        <span id="slug" contentEditable onFocus={this.onFocusGained} onBlur={this.onFocusLost}>
           {slug}
         </span>
       </div>
     )
   }
 
+  private demandFocus() {
+    $('#slugForm #slug').focus()
+  }
+
   private onFocusLost(evt: any) {
     const newText = evt.target.textContent
-    if (newText != this.state.value) {
+    const oldValue = this.state.value
+    if (newText != oldValue) {
       this.setState({ value: newText })
+
       this.props.onChange.call(this, {
-        oldValue: this.state.value,
+        oldValue,
         newValue: newText,
       })
     }
