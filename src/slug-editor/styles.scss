@@ -1,0 +1,30 @@
+
+.cf-form-input {
+	font-size: 16px;
+	color: #2a3039;
+	font-family: "Avenir Next W01", Helvetica, sans-serif;
+	display: block;
+	width: 100%;
+	line-height: 1.5;
+	outline: 0;
+	padding: 0 2px;
+	background-color: transparent;
+	border-width: 0 0 1px 0;
+	border-style: solid;
+	border-color: transparent;
+	border-image-width: 0 0 1px 0;
+	border-image-source: url("https://static.contentful.com/app/svg/dotted-border.svg");
+	border-image-repeat: round;
+	border-image-slice: 1 1;
+	-webkit-transition: 0.2s linear;
+	-moz-transition: 0.2s linear;
+	-o-transition: 0.2s linear;
+	-ms-transition: 0.2s linear;
+	transition: 0.2s linear;
+	-webkit-transition-property: padding, background-color;
+	-moz-transition-property: padding, background-color;
+	-o-transition-property: padding, background-color;
+	-ms-transition-property: padding, background-color;
+	transition-property: padding, background-color;
+	height: 36px;
+}

@@ -20,3 +20,19 @@ export function wait(ms: number): Promise<void> {
     setTimeout(() => resolve(), ms),
   )
 }
+
+export function pathJoin(...pathArr: string[]) {
+  return pathArr.join('/').replace(/\/{2,}/, '/')
+}
+
+export function basename(path: string): string {
+  const pathParts = path.split('/')
+  return pathParts[pathParts.length - 1]
+}
+
+export function trimStart(toTrim: string, valueToRemove: string): string {
+  while (toTrim.startsWith(valueToRemove)) {
+    toTrim = toTrim.substring(valueToRemove.length)
+  }
+  return toTrim
+}
