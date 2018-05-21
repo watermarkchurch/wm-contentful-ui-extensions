@@ -14,7 +14,8 @@ if (contentfulExtension) {
 }
 
 interface IAppState {
-  fieldValue?: KvpList
+  fieldValue?: KvpList,
+  waiting?: boolean
 }
 
 type KvpList = Array<{ key: string, value: string}>
@@ -40,9 +41,9 @@ export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
   }
 
   public render() {
-    const { fieldValue} = this.state
+    const { fieldValue, waiting } = this.state
 
-    return <div>
+    return <div className={waiting ? 'disabled' : ''}>
       <KVPForm
         items={fieldValue}
         onItemsChanged={this.onItemsChanged}
@@ -53,9 +54,14 @@ export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
   private async onItemsChanged(newItems: IPair[]) {
     const sdk = this.props
 
+    this.setState({
+      waiting: true,
+    })
+
     await sdk.field.setValue(newItems)
     this.setState({
       fieldValue: newItems,
+      waiting: false,
     })
   }
 }

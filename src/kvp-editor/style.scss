@@ -61,3 +61,14 @@
     color: red;    
   }
 }
+
+.disabled {
+  .kvp-form {
+    cursor: wait !important;
+
+    a, input, button {
+      cursor: wait !important;
+      color: gray !important;
+    }
+  }
+}
