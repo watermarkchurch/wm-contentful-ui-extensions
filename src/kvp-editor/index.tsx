@@ -6,10 +6,12 @@ import { IPair, KVPForm } from './kvp-form'
 declare function require(module: string): any
 const styles = require('./style.scss')
 
-contentfulExtension.init((extension) => {
-  render(<App {...extension} />,
-    document.getElementById('react-root'))
-})
+if (contentfulExtension) {
+  contentfulExtension.init((extension) => {
+    render(<KvpEditor {...extension} />,
+      document.getElementById('react-root'))
+  })
+}
 
 interface IAppState {
   fieldValue?: KvpList
@@ -17,14 +19,15 @@ interface IAppState {
 
 type KvpList = Array<{ key: string, value: string}>
 
-class App extends Component<IContentfulExtensionSdk, IAppState> {
+export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
 
   constructor() {
     super()
     this.onRowAdded = this.onRowAdded.bind(this)
+    this.onRowDeleted = this.onRowDeleted.bind(this)
   }
 
-  public onComponentMounted() {
+  public componentDidMount() {
     const sdk = this.props
     this.setState({
       fieldValue: sdk.field.getValue() || [],
@@ -62,13 +65,19 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
 
   private async onRowDeleted(pair: IPair) {
     const sdk = this.props
-    const i = this.state.fieldValue.findIndex((p) => p.key == pair.key && p.value == pair.value)
+
+    if (!this.state || !this.state.fieldValue || this.state.fieldValue.length == 0) {
+      return
+    }
+    const {fieldValue} = this.state
+    const i = fieldValue.findIndex((p) => p.key == pair.key && p.value == pair.value)
+
     if (i < 0) {
       return
     }
 
-    const value = this.state.fieldValue.slice(0, i)
-    value.push(...this.state.fieldValue.slice(i + 1))
+    const value = fieldValue.slice(0, i)
+    value.push(...fieldValue.slice(i + 1))
 
     await sdk.field.setValue(value)
     this.setState({

@@ -10,9 +10,13 @@ declare global {
 
 if (!String.prototype.startsWith) {
   // tslint:disable-next-line:only-arrow-functions
-  String.prototype.startsWith = function(search, pos) {
-    return this.substr(!pos || pos < 0 ? 0 : +pos, search.length) === search
+  String.prototype.startsWith = function(search: string, pos: number) {
+    return this.substr(!pos || pos < 0 ? 0 : +pos, search.length) === search;
   }
 }
 
-export default {}
+export function wait(ms: number): Promise<void> {
+  return new Promise<void>((resolve, reject) =>
+    setTimeout(() => resolve(), ms)
+  )
+}
