@@ -37,8 +37,16 @@ usage() {
   echo "$0 <command> [opts]
   Commands:
     create
+      Creates an extension in the space pointing to the Github Pages hosting
+      for the selected version.
 
-    template
+    delete
+      Deletes an extension by ID from the space.
+
+    dev
+      Enables development of an extension by creating an extension in the space
+      that points to 'localhost:8080'.  The webpack-dev-server can then be started
+      with 'npm run serve' to begin hacking.
 
   Flags:" && \
     grep " .)\ #" $0
@@ -188,9 +196,8 @@ set -e
 
 # *** Commands ***
 
-# Example: bin/contentful new_env -e gordon_dev
+# Example: bin/contentful create -s 1xab -e gburgett slug-editor
 create() {
-  # command -v jq >/dev/null 2>&1 || (logerr "I require 'jq' but it's not installed.  Please run 'brew install jq'"; exit -1)
 
   require_environment
   space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
@@ -213,6 +220,7 @@ create() {
   popd
 }
 
+# Example: bin/contentful delete slug-editor
 delete() {
   require_environment
   space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
@@ -225,9 +233,10 @@ delete() {
   echo -e "${COLOR_LCYAN}This will delete the extension ${COLOR_YELLOW}$extension_name${COLOR_LCYAN} in $space_name${COLOR_NC}"
   confirm "Continue?" || exit -1
 
-  $CONTENTFUL_CLI extension delete --id "${extension_name}" --force
+  $CONTENTFUL_CLI extension delete --space-id "$CONTENTFUL_SPACE_ID" --id "${extension_name}" --force
 }
 
+# Example: bin/contentful dev -s 1xab -e gburgett
 dev() {
   require_environment
   space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
@@ -241,7 +250,8 @@ dev() {
   confirm "Continue?" || exit -1
 
   pushd src/$extension_name
-  $CONTENTFUL_CLI extension create --id "${extension_name}-$USER-dev" --src "https://localhost:8080#${extension_name}"
+  $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" --id "${extension_name}-$USER-dev" \
+    --src "https://localhost:8080#${extension_name}"
   popd
 }
 
