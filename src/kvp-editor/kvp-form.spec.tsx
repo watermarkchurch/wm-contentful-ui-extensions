@@ -23,8 +23,8 @@ describe('<kvp-form />', () => {
     // assert
     const inputs = rendered.find('.kvp-form__form').find('input')
     expect(inputs.length).to.equal(2)
-    expect(inputs[0].attributes.name).to.equal('key')
-    expect(inputs[1].attributes.name).to.equal('value')
+    expect(inputs[0].attributes.id).to.equal('key')
+    expect(inputs[1].attributes.id).to.equal('value')
   })
 
   it('renders a table for displaying the pairs', () => {
@@ -53,7 +53,7 @@ describe('<kvp-form />', () => {
     })
 
     // act
-    rendered.find('form').simulate('submit')
+    rendered.find('#add').simulate('click')
 
     // assert
     expect(pairs).to.have.length(1)
@@ -75,7 +75,7 @@ describe('<kvp-form />', () => {
     })
 
     // act
-    rendered.find('form').simulate('submit')
+    rendered.find('#add').simulate('click')
 
     // assert
     expect(pairs).to.have.length(0)
