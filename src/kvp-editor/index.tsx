@@ -30,12 +30,12 @@ export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
   public componentDidMount() {
     const sdk = this.props
     this.setState({
-      fieldValue: sdk.field.getValue() || [],
+      fieldValue: (sdk.field.getValue() || []).filter((i: any) => i),
     })
 
     sdk.field.onValueChanged((newValue) => {
       this.setState({
-        fieldValue: newValue,
+        fieldValue: (newValue || []).filter((i: any) => i),
       })
     })
   }

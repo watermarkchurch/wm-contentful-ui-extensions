@@ -30,10 +30,10 @@ export class KVPForm extends Component<IProps, IState> {
     return <div>
         <div className="kvp-form__header">Enter tags as key-value pairs</div>
         <div className="kvp-form__form">
-          <form onSubmit={this.addRow}>
+          <form name="kvp-form">
             <input type="text" name="key" id="key" onChange={this.setKey} value={this.state.key}></input>
-            <input type="text" name="value" id="value" value={this.state.value}></input>
-            <button type="submit" id="add"></button>
+            <input type="text" name="value" id="value" onChange={this.setVal} value={this.state.value}></input>
+            <input type="submit" id="add" value="+" onClick={this.addRow}></input>
             {this.state.errors && this.state.errors.map((e) =>
               <div class="error">{e}</div>,
             )}
