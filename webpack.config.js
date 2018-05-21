@@ -61,7 +61,8 @@ module.exports = {
     // require("jquery") is external and available
     //  on the global var jQuery
     // "jquery": "jQuery"
-    'contentful-ui-extensions-sdk': 'window.contentfulExtension'
+    'contentful-ui-extensions-sdk': 'window.contentfulExtension',
+    'jquery': 'jQuery'
   },
 
   output: {
