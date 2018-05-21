@@ -1,7 +1,7 @@
 import * as $ from 'jquery'
 import {Component, h, render} from 'preact'
 
-interface IPair { key: string, value: string }
+export interface IPair { key: string, value: string }
 
 interface IProps {
   items?: IPair[]
