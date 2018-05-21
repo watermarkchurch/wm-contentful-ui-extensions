@@ -22,8 +22,16 @@
     }
 
     &__row {
-      .delete {
+      .buttons {
         float:right;
+        display: flex;
+
+        .flex-vert {
+          display: flex;
+          flex-direction: column;
+
+          padding-right: 4px;
+        }
       }
 
       td.text {

@@ -43,9 +43,9 @@ describe('<kvp-form />', () => {
 
   it('adds a new pair to the table on form submit', () => {
 
-    const pairs: Array<{key: string, value: string}> = []
+    let pairs: Array<{key: string, value: string}> = []
     const rendered = shallow(<KVPForm
-      onRowAdded={(pair) => pairs.push(pair)}
+      onItemsChanged={(pair) => pairs = pair}
       />)
     rendered.setState({
       key: 'testkey',
@@ -65,9 +65,9 @@ describe('<kvp-form />', () => {
 
   it('validates presence of key and value', () => {
 
-    const pairs: Array<{key: string, value: string}> = []
+    let pairs: Array<{key: string, value: string}> = []
     const rendered = shallow(<KVPForm
-      onRowAdded={(pair) => pairs.push(pair)}
+      onItemsChanged={(pair) => pairs = pair}
       />)
     rendered.setState({
       key: '',
@@ -83,13 +83,13 @@ describe('<kvp-form />', () => {
   })
 
   it('deletes a pair from the table on clicking the X button', () => {
-    const deleted = [] as any[]
+    let pairs: Array<{key: string, value: string}> = []
     const rendered = shallow(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
       ]}
-      onRowDeleted={(pair) => deleted.push(pair)}
+      onItemsChanged={(pair) => pairs = pair}
       />)
 
     // act
@@ -97,20 +97,20 @@ describe('<kvp-form />', () => {
     button.simulate('click')
 
     // assert
-    expect(deleted).to.have.length(1)
-    expect(deleted[0]).to.deep.equal({
-      key: 'key1', value: 'val1',
+    expect(pairs).to.have.length(1)
+    expect(pairs[0]).to.deep.equal({
+      key: 'key2', value: 'val2',
     })
   })
 
   it('puts the deleted KVP into the inputs', () => {
-    const deleted = [] as any[]
+    let pairs: Array<{key: string, value: string}> = []
     const rendered = shallow(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
       ]}
-      onRowDeleted={(pair) => deleted.push(pair)}
+      onItemsChanged={(pair) => pairs = pair}
       />)
 
     // act
@@ -122,5 +122,47 @@ describe('<kvp-form />', () => {
     expect(rendered.state().value).to.equal('val1')
   })
 
-  it('reorders the inputs with drag-and-drop')
+  it('reorders on moveUp', () => {
+    let pairs: Array<{key: string, value: string}> = []
+    const rendered = shallow(<KVPForm
+      items={[
+        { key: 'key1', value: 'val1' },
+        { key: 'key2', value: 'val2' },
+      ]}
+      onItemsChanged={(pair) => pairs = pair}
+      />)
+
+    // act
+    const button = rendered.find('.kvp-form__table__row').last()
+      .find('.flex-vert').children().first()
+    button.simulate('click')
+
+    // assert
+    expect(pairs).to.deep.equal([
+      { key: 'key2', value: 'val2' },
+      { key: 'key1', value: 'val1' },
+    ])
+  })
+
+  it('reorders on moveDown', () => {
+    let pairs: Array<{key: string, value: string}> = []
+    const rendered = shallow(<KVPForm
+      items={[
+        { key: 'key1', value: 'val1' },
+        { key: 'key2', value: 'val2' },
+      ]}
+      onItemsChanged={(pair) => pairs = pair}
+      />)
+
+    // act
+    const button = rendered.find('.kvp-form__table__row').first()
+      .find('.flex-vert').children().last()
+    button.simulate('click')
+
+    // assert
+    expect(pairs).to.deep.equal([
+      { key: 'key2', value: 'val2' },
+      { key: 'key1', value: 'val1' },
+    ])
+  })
 })

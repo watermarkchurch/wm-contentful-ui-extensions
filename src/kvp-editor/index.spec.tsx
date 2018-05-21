@@ -49,7 +49,7 @@ describe('<KvpEditor />', () => {
     expect(items[0].value).to.equal('val1')
   })
 
-  it('sets field value on row added', () => {
+  it('sets field value on items changed', () => {
     const setValue = sinon.spy()
     const sdk = {
       field: {
@@ -62,7 +62,7 @@ describe('<KvpEditor />', () => {
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)
     const form = rendered.find<any, any>('KVPForm')
-    form.attrs().onRowAdded({ key: 'added', value: 'newValue' })
+    form.attrs().onItemsChanged([{ key: 'added', value: 'newValue' }])
 
     // assert
     expect(setValue).to.have.been.calledWith([{
@@ -70,7 +70,7 @@ describe('<KvpEditor />', () => {
     }])
   })
 
-  it('updates state on row added', async () => {
+  it('updates state on items changed', async () => {
     const sdk = {
       field: {
         getValue: sinon.stub().returns(null),
@@ -82,62 +82,12 @@ describe('<KvpEditor />', () => {
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)
     const form = rendered.find<any, any>('KVPForm')
-    form.attrs().onRowAdded({ key: 'added', value: 'newValue' })
+    form.attrs().onItemsChanged([{ key: 'added', value: 'newValue' }])
     await wait(1)
 
     // assert
     expect(rendered.state().fieldValue).to.deep.equal([
       { key: 'added', value: 'newValue' },
-    ])
-  })
-
-  it('sets field value on row deleted', async () => {
-    const setValue = sinon.spy()
-    const sdk = {
-      field: {
-        getValue: sinon.stub().returns([
-          { key: 'existing', value: 'val' },
-          { key: 'existing2', value: 'val2' },
-        ]),
-        onValueChanged: sinon.stub(),
-        setValue,
-      },
-    }
-
-    // act
-    const rendered = render(<KvpEditor {...sdk as any}/>)
-    const form = rendered.find<any, any>('KVPForm')
-    form.attrs().onRowDeleted({ key: 'existing', value: 'val' })
-
-    // assert
-    expect(setValue).to.have.been.calledWith([{
-      key: 'existing2', value: 'val2',
-    }])
-  })
-
-  it('updates state on row deleted', async () => {
-    const sdk = {
-      field: {
-        getValue: sinon.stub().returns([
-          { key: 'existing', value: 'val' },
-          { key: 'existing2', value: 'val2' },
-          { key: 'existing3', value: 'val3' },
-        ]),
-        onValueChanged: sinon.stub(),
-        setValue: sinon.stub().returns(Promise.resolve()),
-      },
-    }
-
-    // act
-    const rendered = render(<KvpEditor {...sdk as any}/>)
-    const form = rendered.find<any, any>('KVPForm')
-    form.attrs().onRowDeleted({ key: 'existing2', value: 'val2' })
-    await wait(1)
-
-    // assert
-    expect(rendered.state().fieldValue).to.deep.equal([
-      { key: 'existing', value: 'val' },
-      { key: 'existing3', value: 'val3' },
     ])
   })
 })

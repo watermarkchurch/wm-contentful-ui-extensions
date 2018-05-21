@@ -5,8 +5,7 @@ export interface IPair { key: string, value: string }
 
 interface IProps {
   items?: IPair[]
-  onRowAdded?: (evt: IPair) => any
-  onRowDeleted?: (evt: IPair) => any
+  onItemsChanged?: (evt: IPair[]) => any
 }
 
 interface IState {
@@ -44,12 +43,20 @@ export class KVPForm extends Component<IProps, IState> {
         <div className="kvp-form__table">
           <table>
             <tbody>
-              {items && items.map((item) =>
-                  <tr className="kvp-form__table__row">
+              {items && items.map((item, index) =>
+                  <tr key={index} className="kvp-form__table__row">
                     <td className="text">{item.key}</td>
                     <td class="divider">|</td>
                     <td className="text">{item.value}</td>
-                    <td><button className="cf-btn-secondary delete" onClick={() => this.deleteRow(item)}>X</button></td>
+                    <td className="buttons">
+                      <div className="flex-vert">
+                        <a className="" onClick={() => this.moveUp(index)}>{index > 0 ? '△' : '\u00A0'}</a>
+                        <a className="" onClick={() => this.moveDown(index)}>
+                          {index < items.length - 1 ? '▽' : '\u00A0'}
+                        </a>
+                      </div>
+                      <button className="cf-btn-secondary delete" onClick={() => this.deleteRow(item)}>X</button>
+                    </td>
                   </tr>,
                 )}
             </tbody>
@@ -77,10 +84,15 @@ export class KVPForm extends Component<IProps, IState> {
     if (!this.state.value || this.state.value.length == 0) {
       errors.push(`Please set a value`)
     }
-    if (errors.length == 0 && this.props.onRowAdded) {
-      if (this.props.onRowAdded) {
-        this.props.onRowAdded({ key: this.state.key, value: this.state.value })
-      }
+    if (errors.length == 0 && this.props.onItemsChanged) {
+      const value = { key: this.state.key, value: this.state.value }
+      const items = this.props.items || []
+
+      this.props.onItemsChanged([value, ...items])
+      this.setState({
+        key: '',
+        value: '',
+      })
     }
     this.setState({
       errors,
@@ -88,12 +100,45 @@ export class KVPForm extends Component<IProps, IState> {
   }
 
   private deleteRow(item: IPair) {
-    if (this.props.onRowDeleted) {
-      this.props.onRowDeleted(item)
-    }
     this.setState({
       key: item.key,
       value: item.value,
     })
+
+    if (!this.props.onItemsChanged) {
+      return
+    }
+
+    const items = this.props.items || []
+    if (items.length == 0) {
+      return
+    }
+    const i = items.findIndex((p) => p.key == item.key && p.value == item.value)
+
+    if (i < 0) {
+      return
+    }
+
+    const value = items.slice(0, i)
+    value.push(...items.slice(i + 1))
+    this.props.onItemsChanged(value)
+  }
+
+  private moveUp(index: number) {
+    const items = this.props.items || []
+    if (items.length > 0 && index > 0 && this.props.onItemsChanged) {
+      const item = items.splice(index, 1)
+      items.splice(index - 1, 0, ...item)
+      this.props.onItemsChanged(items)
+    }
+  }
+
+  private moveDown(index: number) {
+    const items = this.props.items || []
+    if (items.length > 0 && index < items.length - 1 && this.props.onItemsChanged) {
+      const item = items.splice(index, 1)
+      items.splice(index + 1, 0, ...item)
+      this.props.onItemsChanged(items)
+    }
   }
 }

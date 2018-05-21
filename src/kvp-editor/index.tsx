@@ -23,8 +23,7 @@ export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
 
   constructor() {
     super()
-    this.onRowAdded = this.onRowAdded.bind(this)
-    this.onRowDeleted = this.onRowDeleted.bind(this)
+    this.onItemsChanged = this.onItemsChanged.bind(this)
   }
 
   public componentDidMount() {
@@ -46,41 +45,17 @@ export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
     return <div>
       <KVPForm
         items={fieldValue}
-        onRowAdded={this.onRowAdded}
-        onRowDeleted={this.onRowDeleted}
+        onItemsChanged={this.onItemsChanged}
       />
     </div>
   }
 
-  private async onRowAdded(pair: IPair) {
-    const sdk = this.props
-    const value = [pair, ...this.state.fieldValue]
-
-    await sdk.field.setValue(value)
-    this.setState({
-      fieldValue: value,
-    })
-  }
-
-  private async onRowDeleted(pair: IPair) {
+  private async onItemsChanged(newItems: IPair[]) {
     const sdk = this.props
 
-    if (!this.state || !this.state.fieldValue || this.state.fieldValue.length == 0) {
-      return
-    }
-    const {fieldValue} = this.state
-    const i = fieldValue.findIndex((p) => p.key == pair.key && p.value == pair.value)
-
-    if (i < 0) {
-      return
-    }
-
-    const value = fieldValue.slice(0, i)
-    value.push(...fieldValue.slice(i + 1))
-
-    await sdk.field.setValue(value)
+    await sdk.field.setValue(newItems)
     this.setState({
-      fieldValue: value,
+      fieldValue: newItems,
     })
   }
 }
