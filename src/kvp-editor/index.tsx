@@ -10,6 +10,7 @@ if (contentfulExtension) {
   contentfulExtension.init((extension) => {
     render(<KvpEditor {...extension} />,
       document.getElementById('react-root'))
+    extension.window.startAutoResizer()
   })
 }
 
