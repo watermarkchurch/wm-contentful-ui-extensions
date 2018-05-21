@@ -41,13 +41,86 @@ describe('<kvp-form />', () => {
     expect(rows.length).to.equal(2)
   })
 
-  it('adds a new pair to the table on button press')
+  it('adds a new pair to the table on form submit', () => {
 
-  it('adds a new pair to the table on enter')
+    const pairs: Array<{key: string, value: string}> = []
+    const rendered = shallow(<KVPForm
+      onRowAdded={(pair) => pairs.push(pair)}
+      />)
+    rendered.setState({
+      key: 'testkey',
+      value: 'testval',
+    })
 
-  it('deletes a pair from the table on clicking the X button')
+    // act
+    rendered.find('form').simulate('submit')
 
-  it('puts the deleted KVP into the inputs')
+    // assert
+    expect(pairs).to.have.length(1)
+    expect(pairs[0]).to.deep.equal({
+      key: 'testkey',
+      value: 'testval',
+    })
+  })
+
+  it('validates presence of key and value', () => {
+
+    const pairs: Array<{key: string, value: string}> = []
+    const rendered = shallow(<KVPForm
+      onRowAdded={(pair) => pairs.push(pair)}
+      />)
+    rendered.setState({
+      key: '',
+      value: null,
+    })
+
+    // act
+    rendered.find('form').simulate('submit')
+
+    // assert
+    expect(pairs).to.have.length(0)
+    expect(rendered.find('.error')).to.have.length(2)
+  })
+
+  it('deletes a pair from the table on clicking the X button', () => {
+    const deleted = [] as any[]
+    const rendered = shallow(<KVPForm
+      items={[
+        { key: 'key1', value: 'val1' },
+        { key: 'key2', value: 'val2' },
+      ]}
+      onRowDeleted={(pair) => deleted.push(pair)}
+      />)
+
+    // act
+    const button = rendered.find('.delete').first()
+    button.simulate('click')
+
+    // assert
+    expect(deleted).to.have.length(1)
+    expect(deleted[0]).to.deep.equal({
+      key: 'key1', value: 'val1',
+    })
+  })
+
+  it('puts the deleted KVP into the inputs', () => {
+    const deleted = [] as any[]
+    const rendered = shallow(<KVPForm
+      items={[
+        { key: 'key1', value: 'val1' },
+        { key: 'key2', value: 'val2' },
+      ]}
+      onRowDeleted={(pair) => deleted.push(pair)}
+      />)
+
+    // act
+    const button = rendered.find('.delete').first()
+    button.simulate('click')
+
+    // assert
+    expect(rendered.state().key).to.equal('key1')
+    expect(rendered.state().value).to.equal('val1')
+  })
 
   it('reorders the inputs with drag-and-drop')
 })
