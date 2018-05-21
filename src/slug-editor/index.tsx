@@ -17,6 +17,7 @@ contentfulExtension.init((extension) => {
 interface IAppState {
   fieldValue: string
   parentSlug: string
+  errors: string[]
 }
 
 class App extends Component<IContentfulExtensionSdk, IAppState> {
@@ -29,6 +30,7 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
   public componentDidMount() {
     this.setState({
       fieldValue: this.props.field.getValue(),
+      errors: [],
     })
 
     // find the page pointing to this page
@@ -51,22 +53,34 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
       })
     }).catch((err) => {
       console.error('Error querying!', err)
+      this.setState({
+        errors: [err.toString()],
+      })
     })
   }
 
   public render() {
-    const { fieldValue, parentSlug } = this.state
-
-    console.log('render', parentSlug)
+    const { fieldValue, parentSlug, errors } = this.state
 
     return <div>
       <SlugForm slug={fieldValue}
         parentSlug={parentSlug}
         onChange={this.onSlugChange} />
+
+      {errors && <div className="errors">
+        {errors.map((err) =>
+          <div className="error">{err}</div>,
+        )}
+        </div>}
     </div>
   }
 
-  private onSlugChange(event: { oldValue: string, newValue: string }) {
-    this.props.field.setValue(pathJoin(this.state.parentSlug, event.newValue))
+  private async onSlugChange(event: { oldValue: string, newValue: string }) {
+    const newValue = pathJoin(this.state.parentSlug, event.newValue)
+    await this.props.field.setValue(newValue)
+    this.setState({
+      fieldValue: event.newValue,
+      errors: [],
+    })
   }
 }

@@ -17,7 +17,11 @@ export class SlugForm extends Component<ISlugFormProps, {value: string}> {
   }
 
   public render() {
-    const {slug, parentSlug} = this.props
+    const {parentSlug} = this.props
+    let {slug} = this.props
+    if (this.state && this.state.value && this.state.value.length > 0) {
+      slug = this.state.value
+    }
 
     return (
       <div id="slugForm" class="cf-form-input">
