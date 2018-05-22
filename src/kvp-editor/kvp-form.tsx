@@ -27,26 +27,13 @@ export class KVPForm extends Component<IProps, IState> {
     const {items} = this.props
 
     return <div className="kvp-form">
-        <div className="kvp-form__form">
-          <form >
-            <input className="cf-form-input" type="text" id="key"
-              onChange={this.setKey} value={this.state.key}></input>
-            <span class="divider">|</span>
-            <input className="cf-form-input" type="text" id="value"
-              onChange={this.setVal} value={this.state.value}></input>
-            <button className="cf-btn-primary" type="submit" id="add" onClick={this.addRow}>+</button>
-            {this.state.errors && this.state.errors.map((e) =>
-              <div class="error">{e}</div>,
-            )}
-          </form>
-        </div>
         <div className="kvp-form__table">
           <table>
             <tbody>
               {items && items.map((item, index) =>
                   <tr key={index} className="kvp-form__table__row">
                     <td className="text">{item.key}</td>
-                    <td class="divider">|</td>
+                    <td className="divider">|</td>
                     <td className="text">{item.value}</td>
                     <td className="buttons">
                       <div className="flex-vert">
@@ -59,8 +46,28 @@ export class KVPForm extends Component<IProps, IState> {
                     </td>
                   </tr>,
                 )}
+                <tr className="kvp-form__table__row form">
+                  <td className="text">
+                  <input className="cf-form-input" type="text" id="key"
+                    onChange={this.setKey} value={this.state.key}></input>
+                  </td>
+                  <td className="divider">
+                  <span class="divider">|</span>
+                  </td>
+                  <td className="text">
+                  <input className="cf-form-input" type="text" id="value"
+                    onChange={this.setVal} value={this.state.value}></input>
+                  </td>
+                  <td className="buttons">
+                  <button className="cf-btn-primary" type="submit" id="add" onClick={this.addRow}>+</button>
+                  </td>
+                </tr>
             </tbody>
           </table>
+
+          {this.state.errors && this.state.errors.map((e) =>
+            <div class="error">{e}</div>,
+          )}
         </div>
       </div>
   }
@@ -88,7 +95,7 @@ export class KVPForm extends Component<IProps, IState> {
       const value = { key: this.state.key, value: this.state.value }
       const items = this.props.items || []
 
-      this.props.onItemsChanged([value, ...items])
+      this.props.onItemsChanged([...items, value])
       this.setState({
         key: '',
         value: '',

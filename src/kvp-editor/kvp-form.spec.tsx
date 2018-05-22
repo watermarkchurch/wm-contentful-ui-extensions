@@ -21,7 +21,7 @@ describe('<kvp-form />', () => {
     const rendered = shallow(<KVPForm />)
 
     // assert
-    const inputs = rendered.find('.kvp-form__form').find('input')
+    const inputs = rendered.find('.form').find('input')
     expect(inputs.length).to.equal(2)
     expect(inputs[0].attributes.id).to.equal('key')
     expect(inputs[1].attributes.id).to.equal('value')
@@ -38,7 +38,8 @@ describe('<kvp-form />', () => {
 
     // assert
     const rows = rendered.find('.kvp-form__table__row')
-    expect(rows.length).to.equal(2)
+    // 2 display rows + 1 form row
+    expect(rows.length).to.equal(3)
   })
 
   it('adds a new pair to the table on form submit', () => {
@@ -133,7 +134,7 @@ describe('<kvp-form />', () => {
       />)
 
     // act
-    const button = rendered.find('.kvp-form__table__row').last()
+    const button = rendered.find('.kvp-form__table__row').at(1)
       .find('.flex-vert').children().first()
     button.simulate('click')
 
