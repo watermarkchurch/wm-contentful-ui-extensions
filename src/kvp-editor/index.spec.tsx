@@ -6,18 +6,14 @@ import * as sinon from 'sinon'
 import * as sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
+import { stubSdk } from '../lib/spec-helpers'
 import { wait } from '../lib/utils'
 import {KvpEditor} from './index'
 
 describe('<KvpEditor />', () => {
 
   it('renders empty KVPForm when value empty', () => {
-    const sdk = {
-      field: {
-        getValue: sinon.stub().returns(null),
-        onValueChanged: sinon.stub(),
-      },
-    }
+    const sdk = stubSdk()
 
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)
@@ -28,14 +24,12 @@ describe('<KvpEditor />', () => {
   })
 
   it('renders KVPForm with values from sdk', async () => {
-    const sdk = {
-      field: {
+    const sdk = stubSdk({
         getValue: sinon.stub().returns([
           { key: 'test1', value: 'val1' },
         ]),
         onValueChanged: sinon.stub(),
-      },
-    }
+      })
 
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)
@@ -51,13 +45,11 @@ describe('<KvpEditor />', () => {
 
   it('sets field value on items changed', () => {
     const setValue = sinon.spy()
-    const sdk = {
-      field: {
+    const sdk = stubSdk({
         getValue: sinon.stub().returns(null),
         onValueChanged: sinon.stub(),
         setValue,
-      },
-    }
+      })
 
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)
@@ -71,13 +63,11 @@ describe('<KvpEditor />', () => {
   })
 
   it('updates state on items changed', async () => {
-    const sdk = {
-      field: {
+    const sdk = stubSdk({
         getValue: sinon.stub().returns(null),
         onValueChanged: sinon.stub(),
         setValue: sinon.stub().returns(Promise.resolve()),
-      },
-    }
+      })
 
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)
