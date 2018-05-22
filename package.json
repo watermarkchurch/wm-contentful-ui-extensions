@@ -30,7 +30,7 @@
     "@types/sinon-chai": "^2.7.31",
     "chai": "^4.1.2",
     "chai-jquery": "^2.0.0",
-    "contentful-cli": "^0.9.0",
+    "contentful-cli": "^0.13.1",
     "css-loader": "^0.28.11",
     "fs-extra": "^6.0.0",
     "glob": "^7.1.2",
