@@ -108,9 +108,8 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
   }
 
   private async checkSubpages(subpages: Array<ILink<'Entry'>>): Promise<string[]> {
-    const {fieldValue} = this.state
+    const {parentSlug, fieldValue} = this.state
     const { space, environment } = this.props.entry.getSys()
-    const env = environment ? `/environments/${environment.sys.id}` : ''
 
     const entries = await this.props.space.getEntries({
       'content_type': 'page',
@@ -122,16 +121,17 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
         return null
       }
       const slug = page.fields.slug['en-US'] as string
-      if (slug.startsWith(fieldValue)) {
+      if (slug.startsWith(pathJoin(parentSlug, fieldValue))) {
         console.log(`subpage ${slug} is good`)
         return null
       }
 
-      console.log('bad page', page.fields)
+      console.log('bad page', fieldValue, page.fields)
 
       const title = page.fields.title && page.fields.title['en-US']
-      return `<a href="https://app.contentful.com/spaces/${space.sys.id}${env}` +
-        `/entries/${page.sys.id}" target="_blank">${title || page.sys.id}</a>`
+      return `<a href="https://app.contentful.com/spaces/${space.sys.id}` +
+        `/entries/${page.sys.id}" target="_blank">${title || page.sys.id}</a> ` +
+        `(${slug})`
     }).filter((w) => w)
 
     if (warnings.length == 0) {
@@ -171,4 +171,9 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
       this.props.field.setInvalid(false)
     }
   }
+}
+
+function isGUID(str: string): boolean {
+  // 74cf1363-def1-4596-8683-268af397eaa5
+  return /^(\w+\-){4}\w+$/.test(str)
 }
