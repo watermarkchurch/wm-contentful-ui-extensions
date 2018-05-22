@@ -75,10 +75,7 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
       fieldValue: event.newValue,
     })
     if (await this.validateNewSlug(event.newValue)) {
-      this.props.field.setInvalid(false)
       await this.props.field.setValue(newValue)
-    } else {
-      this.props.field.setInvalid(true)
     }
   }
 
@@ -88,6 +85,8 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
 
     if (!value || value.length == 0) {
       errors.push(`The slug cannot be empty!`)
+    } else if (/\s/.test(value)) {
+      errors.push(`The slug must not contain whitespace!`)
     }
 
     const { fields } = this.props.entry
@@ -104,7 +103,13 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
       warnings,
     })
 
-    return errors.length == 0
+    if (errors.length > 0) {
+      this.props.field.setInvalid(true)
+      return false
+    } else {
+      this.props.field.setInvalid(false)
+      return true
+    }
   }
 
   private async checkSubpages(subpages: Array<ILink<'Entry'>>): Promise<string[]> {
@@ -165,11 +170,7 @@ class App extends Component<IContentfulExtensionSdk, IAppState> {
       fieldValue,
     })
 
-    if (!await this.validateNewSlug(fieldValue)) {
-      this.props.field.setInvalid(true)
-    } else {
-      this.props.field.setInvalid(false)
-    }
+    await this.validateNewSlug(fieldValue)
   }
 }
 
