@@ -8,10 +8,12 @@ import {SlugForm} from './slug-form'
 declare function require(module: string): any
 const styles = require('./styles.scss')
 
-contentfulExtension.init((extension) => {
-  render(<App {...extension} />,
-    document.getElementById('react-root'))
-})
+if (contentfulExtension) {
+  contentfulExtension.init((extension) => {
+    render(<SlugEditor {...extension} />,
+      document.getElementById('react-root'))
+  })
+}
 
 interface IAppState {
   fieldValue: string
@@ -20,7 +22,7 @@ interface IAppState {
   warnings: string[]
 }
 
-class App extends Component<IContentfulExtensionSdk, IAppState> {
+export class SlugEditor extends Component<IContentfulExtensionSdk, IAppState> {
 
   constructor() {
     super()

@@ -28,7 +28,6 @@ describe('<KvpEditor />', () => {
         getValue: sinon.stub().returns([
           { key: 'test1', value: 'val1' },
         ]),
-        onValueChanged: sinon.stub(),
       })
 
     // act
@@ -46,8 +45,6 @@ describe('<KvpEditor />', () => {
   it('sets field value on items changed', () => {
     const setValue = sinon.spy()
     const sdk = stubSdk({
-        getValue: sinon.stub().returns(null),
-        onValueChanged: sinon.stub(),
         setValue,
       })
 
@@ -63,11 +60,7 @@ describe('<KvpEditor />', () => {
   })
 
   it('updates state on items changed', async () => {
-    const sdk = stubSdk({
-        getValue: sinon.stub().returns(null),
-        onValueChanged: sinon.stub(),
-        setValue: sinon.stub().returns(Promise.resolve()),
-      })
+    const sdk = stubSdk()
 
     // act
     const rendered = render(<KvpEditor {...sdk as any}/>)

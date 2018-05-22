@@ -5,12 +5,15 @@ const fakeSdk = {
   field: {
     getValue: sinon.stub().returns(null),
     onValueChanged: sinon.stub(),
+    setInvalid: sinon.stub(),
+    setValue: sinon.stub().returns(Promise.resolve()),
   },
   space: {
     getEntries: sinon.stub().returns(Promise.resolve({ items: [] })),
   },
   entry: {
     getSys: sinon.stub().returns({ id: 'test' }),
+    fields: {},
   },
 }
 

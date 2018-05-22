@@ -31,6 +31,9 @@ export function basename(path: string): string {
 }
 
 export function trimStart(toTrim: string, valueToRemove: string): string {
+  if (!toTrim || !valueToRemove) {
+    return toTrim
+  }
   while (toTrim.startsWith(valueToRemove)) {
     toTrim = toTrim.substring(valueToRemove.length)
   }
