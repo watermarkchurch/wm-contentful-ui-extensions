@@ -131,7 +131,7 @@ require_environment() {
     if [[ ! -f ~/.contentfulrc.json || -z "$(cat ~/.contentfulrc.json | grep activeSpaceId)" ]]; then
       $CONTENTFUL_CLI space use
     fi
-    CONTENTFUL_SPACE_ID="$(cat ~/.contentfulrc.json | grep activeSpaceId)"
+    CONTENTFUL_SPACE_ID="$(cat ~/.contentfulrc.json | jq -r '.activeSpaceId')"
   fi
 }
 
@@ -177,16 +177,53 @@ latest_version() {
 }
 
 all_versions() {
-  npm view wm-contentful-ui-extensions versions --json | jq -r .[]
+  echo "latest"
+  version=$(cat package.json | jq -r '.version')
+  echo "$version" | grep -Eo '^\d'
+  echo "$version" | grep -Eo '^\d.\d'
+  echo "$version" | grep -Eo '^\d.\d.\d'
 }
 
 select_package() {
-  local packages=($(for D in src/*/extension.json; do echo $(basename $(dirname $D)); done)) 
-  PS3="Select which extension to create in the space: "
+  local packages=($(for D in src/*/extension.json; do echo $(basename $(dirname $D)); done))
+  logv "packages: ${packages[@]}"
+  PS3="Select which extension to create in space ${CONTENTFUL_SPACE_ID}: "
   select package in "${packages[@]}"
   do
     if [[ ! -z "$package" ]]; then
       echo "$package"
+      break;
+    fi
+  done
+}
+
+select_version() {
+  local versions=($(all_versions))
+  logv "versions: ${versions}"
+  PS3="Select which version to use: "
+  select version in "${versions[@]}"
+  do
+    if [[ ! -z "$version" ]]; then
+      echo "$version"
+      break;
+    fi
+  done
+}
+
+select_extension() {
+  [[ ! -z "$CONTENTFUL_ENVIRONMENT" ]] && path="/environments/$CONTENTFUL_ENVIRONMENT"
+
+  local extensions=$(curlv -H "Authorization: Bearer ${CONTENTFUL_MANAGEMENT_TOKEN}" -s https://api.contentful.com/spaces/${CONTENTFUL_SPACE_ID}${path}/extensions)
+  logv "extensions: ${extensions}"
+  local error=$(echo "$extensions" | jq -r '.message')
+  [[ ! -z "$error" && "$error" != "null" ]] && logerr "Error locating extensions: ${error}" && exit -1;
+
+  extensions=($(echo "$extensions" | jq -r '.items[].sys.id'))
+  PS3="Select which extension: "
+  select extension in "${extensions[@]}"
+  do
+    if [[ ! -z "$extension" ]]; then
+      echo "$extension"
       break;
     fi
   done
@@ -212,7 +249,7 @@ create() {
   
   local extension_name=$(echo "$extension" | awk -F@ '{ print $1 }')
   local extension_version=$(echo "$extension" | awk -F@ '{ print $2 }')
-  [[ -z "$extension_version" ]] && extension_version=$(latest_version)
+  [[ -z "$extension_version" ]] && extension_version=$(select_version)
   extension="$extension_name@$extension_version"
 
   echo -e "${COLOR_LCYAN}This will create the extension ${COLOR_YELLOW}$extension${COLOR_LCYAN} in $space_name${COLOR_NC}"
@@ -236,7 +273,8 @@ delete() {
   fi
 
   local extension="$1"
-  [[ -z "$extension" ]] && extension=$(select_package)
+  [[ -z "$extension" ]] && extension=$(select_extension)
+  [[ -z "$extension" ]] && logerr "Unable to find any extension to delete.  Try rerunning with -v." && exit -1;
   
   local extension_name=$(echo "$extension" | awk -F@ '{ print $1 }')
 
@@ -265,7 +303,7 @@ dev() {
   confirm "Continue?" || exit -1
 
   pushd src/$extension_name
-  $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" \
+  $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" --name "${extension_name}-$USER-dev"  \
     --src "https://localhost:8080#${extension_name}"
   popd
 }
