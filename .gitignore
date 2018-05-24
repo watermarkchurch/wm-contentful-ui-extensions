@@ -4,3 +4,5 @@ src/*/*.html
 !/.template.html
 
 docs/**/*.html
+
+.vscode
