@@ -1,4 +1,4 @@
-import { IContentfulExtensionSdk, ICurrentField, IEntry, ISpace } from 'contentful-ui-extensions-sdk'
+import { EntryAPI, FieldAPI, FieldExtensionSDK, SpaceAPI } from 'contentful-ui-extensions-sdk'
 import * as sinon from 'sinon'
 
 const fakeSdk = {
@@ -18,14 +18,14 @@ const fakeSdk = {
 }
 
 export function stubSdk(
-    field?: Partial<ICurrentField>,
-    space?: Partial<ISpace>,
-    entry?: Partial<IEntry>,
-  ): IContentfulExtensionSdk {
+    field?: Partial<FieldAPI>,
+    space?: Partial<SpaceAPI>,
+    entry?: Partial<EntryAPI>,
+  ): FieldExtensionSDK {
   const fake = {
     field: Object.assign({}, fakeSdk.field, field),
     space: Object.assign({}, fakeSdk.space, space),
     entry: Object.assign({}, fakeSdk.entry, entry),
   }
-  return fake as any as IContentfulExtensionSdk
+  return fake as any as FieldExtensionSDK
 }
