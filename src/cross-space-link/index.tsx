@@ -17,24 +17,19 @@ if (contentfulExtension) {
 }
 
 interface IAppState {
-  fieldValue: {
-    sys: {
-      id: string,
-      type: 'Link',
-      linkType: 'Entry',
-      space?: {
-        sys: {
-          id: string,
-          type: 'Link',
-          linkType: 'Space',
-        },
-      },
-    },
-  } | null,
+  fieldValue: IFieldValue | null,
   link: Entry<any> | null,
   possibilities: Array<Entry<any>>,
   loading: boolean,
   error: any | null
+}
+
+interface IFieldValue {
+  sys: {
+    id: string,
+    type: 'Link',
+    linkType: 'Entry',
+  },
 }
 
 interface IInstanceParams {
@@ -77,6 +72,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     })
 
     sdk.field.onValueChanged((newValue) => {
+      console.log('new value:', newValue)
       this.setState({
         fieldValue: newValue,
       })
@@ -117,21 +113,10 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
             <div className="modal-body">
               <ul>
                 {this.state.possibilities.map((entry) => {
-                  const fieldNames = Object.keys(entry.fields)
-                  let display: string
-                  if (!params.display) {
-                    display = entry.fields[fieldNames[0]]
-                  } else if (fieldNames.indexOf(params.display) >= 0) {
-                    display = entry.fields[params.display]
-                  } else {
-                    display = template(params.display, {
-                      ...entry.sys,
-                      ...entry.fields,
-                    })
-                  }
-
                   return <li>
-                    {display}
+                    <a onClick={this.selectLink(entry)}>
+                      {displayName(entry, params)}
+                    </a>
                   </li>
                 })}
               </ul>
@@ -150,12 +135,13 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     const { link } = this.state
 
     return <div>
-      {link.sys.id}
+      {displayName(link, this.params())}
     </div>
   }
 
   private loadLink = async () => {
     const { fieldValue } = this.state
+
     if (!(fieldValue && fieldValue.sys && fieldValue.sys.id)) {
       this.setState({
         fieldValue: null,
@@ -191,6 +177,49 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     } catch (ex) {
       this.setState({ error: ex })
     }
+  }
+
+  private selectLink = (entry: Entry<any>) => async (evt: any) => {
+    const sdk = this.props
+    this.setState({
+      loading: true,
+    })
+    try {
+      const newValue: IFieldValue = {
+        sys: {
+          id: entry.sys.id,
+          type: 'Link',
+          linkType: 'Entry',
+        },
+      }
+      await sdk.field.setValue(newValue)
+      this.setState({
+        fieldValue: newValue,
+      })
+    } catch (ex) {
+      this.setState({
+        error: ex,
+      })
+    } finally {
+      this.setState({
+        loading: false,
+      })
+    }
+  }
+}
+
+function displayName(entry: Entry<any>, params: IInstanceParams) {
+  const fieldNames = Object.keys(entry.fields)
+
+  if (!params.display) {
+    return entry.fields[fieldNames[0]]
+  } else if (fieldNames.indexOf(params.display) >= 0) {
+    return entry.fields[params.display]
+  } else {
+    return template(params.display, {
+      ...entry.sys,
+      ...entry.fields,
+    })
   }
 }
 
