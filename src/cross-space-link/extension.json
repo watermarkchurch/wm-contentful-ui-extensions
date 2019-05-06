@@ -27,6 +27,13 @@
         "name": "Content Type",
         "description": "The Content Type to look for in the other space",
         "required": false
+      },
+      {
+        "id": "display",
+        "type": "Symbol",
+        "name": "Display field (or template)",
+        "description": "A field or template string to be executed to create the entry's display name",
+        "required": false
       }
     ]
   }

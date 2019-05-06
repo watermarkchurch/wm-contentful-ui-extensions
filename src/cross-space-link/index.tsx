@@ -3,6 +3,7 @@ import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import {Component, h, render} from 'preact'
 import { injectBootstrap } from '../lib/utils'
+const template = require('es6-dynamic-template')
 
 declare function require(module: string): any
 const styles = require('./style.scss')
@@ -36,6 +37,13 @@ interface IAppState {
   error: any | null
 }
 
+interface IInstanceParams {
+  space: string
+  accessToken: string
+  contentType: string
+  display: string
+}
+
 export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState> {
   private client: ContentfulClientApi
 
@@ -51,6 +59,11 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     }
   }
 
+  public params(): IInstanceParams {
+    const params: any = (this.props.parameters && this.props.parameters.instance) || {}
+    return params
+  }
+
   public componentDidMount() {
     const sdk = this.props
 
@@ -58,10 +71,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       fieldValue: sdk.field && sdk.field.getValue(),
     })
 
-    const params: any = (sdk.parameters && sdk.parameters.instance) || {}
     this.client = createClient({
-      accessToken: params.accessToken,
-      space: params.space,
+      accessToken: this.params().accessToken,
+      space: this.params().space,
     })
 
     sdk.field.onValueChanged((newValue) => {
@@ -78,6 +90,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
   public render() {
     const { link, fieldValue, loading } = this.state
+    const params = this.params()
 
     return <div className={`cross-space-link ${loading ? 'disabled' : ''}`}>
       {link ?
@@ -104,9 +117,21 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
             <div className="modal-body">
               <ul>
                 {this.state.possibilities.map((entry) => {
-                  const displayField = Object.keys(entry.fields)[0]
+                  const fieldNames = Object.keys(entry.fields)
+                  let display: string
+                  if (!params.display) {
+                    display = entry.fields[fieldNames[0]]
+                  } else if (fieldNames.indexOf(params.display) >= 0) {
+                    display = entry.fields[params.display]
+                  } else {
+                    display = template(params.display, {
+                      ...entry.sys,
+                      ...entry.fields,
+                    })
+                  }
+
                   return <li>
-                    {entry.fields[displayField]}
+                    {display}
                   </li>
                 })}
               </ul>
@@ -155,11 +180,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   }
 
   private loadPossibilities = async () => {
-    const params: any = (this.props.parameters && this.props.parameters.instance) || {}
-
     try {
       const entries = await this.client.getEntries<any>({
-        content_type: params.contentType,
+        content_type: this.params().contentType,
       })
 
       this.setState({
