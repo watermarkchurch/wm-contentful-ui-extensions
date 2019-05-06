@@ -1,0 +1,33 @@
+{
+  "id": "cross-space-link",
+  "name": "Allows linking to objects in another space.",
+  "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
+  "fieldTypes": [
+    "Entry"
+  ],
+  "parameters": {
+    "instance": [
+      {
+        "id": "space",
+        "type": "Symbol",
+        "name": "Contentful Space ID",
+        "description": "The Space ID to link to",
+        "required": true
+      },
+      {
+        "id": "accessToken",
+        "type": "Symbol",
+        "name": "Access Token",
+        "description": "A CDN access token for querying the other space",
+        "required": true
+      },
+      {
+        "id": "contentType",
+        "type": "Symbol",
+        "name": "Content Type",
+        "description": "The Content Type to look for in the other space",
+        "required": false
+      }
+    ]
+  }
+}
