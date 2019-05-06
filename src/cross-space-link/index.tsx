@@ -1,3 +1,4 @@
+import {} from 'bootstrap'
 import {ContentfulClientApi, createClient, Entry, Field} from 'contentful'
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
@@ -72,9 +73,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     })
 
     sdk.field.onValueChanged((newValue) => {
-      console.log('new value:', newValue)
       this.setState({
         fieldValue: newValue,
+        link: null,
       })
 
       this.loadLink()
@@ -136,6 +137,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
     return <div>
       {displayName(link, this.params())}
+      <a onClick={this.removeLink} className="btn btn-danger">
+        Delete
+      </a>
     </div>
   }
 
@@ -195,6 +199,30 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       await sdk.field.setValue(newValue)
       this.setState({
         fieldValue: newValue,
+      })
+
+      $('#exampleModal').modal('hide')
+    } catch (ex) {
+      this.setState({
+        error: ex,
+      })
+    } finally {
+      this.setState({
+        loading: false,
+      })
+    }
+  }
+
+  private removeLink = async (evt: any) => {
+    const sdk = this.props
+    this.setState({
+      loading: true,
+    })
+    try {
+      await sdk.field.removeValue()
+      this.setState({
+        fieldValue: null,
+        link: null,
       })
     } catch (ex) {
       this.setState({
