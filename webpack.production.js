@@ -1,9 +1,9 @@
 const merge = require('webpack-merge');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const HtmlWebpackInlineSVGPlugin = require('html-webpack-inline-svg-plugin')
 const webpack = require('webpack')
 const fs = require('fs-extra')
+const TerserPlugin = require('terser-webpack-plugin')
 
 const pkg = require('./package.json')
 // create version specifiers ['0', '0.1', '0.1.1']
@@ -13,6 +13,10 @@ const common = require('./webpack.config.js');
 
 module.exports = merge(common, {
   mode: 'production',
+  optimization: {
+    // https://github.com/webpack/webpack/issues/6389#issuecomment-466712313
+    minimizer: [new TerserPlugin()]
+  },
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
