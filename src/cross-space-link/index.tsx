@@ -31,6 +31,7 @@ interface IAppState {
     },
   } | null,
   link: Entry<any> | null,
+  possibilities: Array<Entry<any>>,
   loading: boolean,
   error: any | null
 }
@@ -45,6 +46,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       fieldValue: null,
       link: null,
       loading: false,
+      possibilities: [],
       error: null,
     }
   }
@@ -67,10 +69,11 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
         fieldValue: newValue,
       })
 
-      this.loadLinks()
+      this.loadLink()
     })
 
-    this.loadLinks()
+    this.loadLink()
+    this.loadPossibilities()
   }
 
   public render() {
@@ -83,7 +86,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
           {fieldValue ?
             <h4 className="error">Broken link!</h4> :
             <span></span>}
-          <a onClick={this.linkEntry} data-toggle="modal" data-target="#exampleModal">
+          <a data-toggle="modal" data-target="#exampleModal">
             Link existing entries
           </a>
         </div>}
@@ -93,13 +96,20 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
         <div className="modal-dialog" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Modal title</h5>
+              <h5 className="modal-title">Choose an entry</h5>
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div className="modal-body">
-              <p>Modal body text goes here.</p>
+              <ul>
+                {this.state.possibilities.map((entry) => {
+                  const displayField = Object.keys(entry.fields)[0]
+                  return <li>
+                    {entry.fields[displayField]}
+                  </li>
+                })}
+              </ul>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -119,7 +129,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     </div>
   }
 
-  private loadLinks = async () => {
+  private loadLink = async () => {
     const { fieldValue } = this.state
     if (!(fieldValue && fieldValue.sys && fieldValue.sys.id)) {
       this.setState({
@@ -144,8 +154,20 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     }
   }
 
-  private linkEntry = async () => {
+  private loadPossibilities = async () => {
+    const params: any = (this.props.parameters && this.props.parameters.instance) || {}
 
+    try {
+      const entries = await this.client.getEntries<any>({
+        content_type: params.contentType,
+      })
+
+      this.setState({
+        possibilities: entries.toPlainObject().items,
+      })
+    } catch (ex) {
+      this.setState({ error: ex })
+    }
   }
 }
 
