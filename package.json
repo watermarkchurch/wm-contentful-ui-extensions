@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.production.js",
-    "version": "webpack --config webpack.production.js && git add -f docs/**/*.html && git add -f docs/*.html",
+    "version": "webpack --config webpack.production.js && git add -f docs/**/* && git add -f docs/*",
     "serve": "webpack-dev-server -d --config ./webpack.config.js --https",
     "enable-dev": "bin/contentful dev",
     "test": "NODE_ENV=test karma start",
     "test-watch": "NODE_ENV=test karma start --auto-watch --no-single-run",
     "lint": "tslint src/**/*.ts?\\(x\\)",
-    "prepublishOnly": "npm run build"
+    "clean": "rm -r dist; git checkout -- docs; true",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "author": "",
   "license": "MIT",
