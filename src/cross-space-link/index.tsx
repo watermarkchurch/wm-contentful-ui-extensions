@@ -86,8 +86,17 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   }
 
   public render() {
-    const { link, fieldValue, loading } = this.state
+    const { link, fieldValue, loading, error } = this.state
     const params = this.params()
+
+    if (error) {
+      return <div className={`cross-space-link error`}>
+        <h1>Error!</h1>
+        <pre>
+          {error.message}
+        </pre>
+      </div>
+    }
 
     return <div className={`cross-space-link ${loading ? 'disabled' : ''}`}>
       {link ?
