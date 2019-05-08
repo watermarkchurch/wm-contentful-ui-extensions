@@ -87,22 +87,19 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     const { link, fieldValue, loading, error } = this.state
     const params = this.params()
 
-    if (error) {
-      return <div className={`cross-space-link error`}>
-        <h1>Error!</h1>
-        <pre>
-          {error.message}
-        </pre>
-      </div>
-    }
-
-    return <div className={`cross-space-link ${loading ? 'disabled' : ''}`}>
+    return <div className={`cross-space-link ${error ? 'error' : ''} ${loading ? 'loading disabled' : ''}`}>
+      {loading && <div class="loader"></div>}
+      {error && <div>
+          <h1>Error!</h1>
+          <pre>
+            {error.message}
+          </pre>
+        </div>}
       {link ?
         this.renderLink() :
         <div>
-          {fieldValue ?
-            <h4 className="error">Broken link!</h4> :
-            <span></span>}
+          {fieldValue && !loading && !error &&
+            <h4 className="error">Broken link!</h4>}
           <a data-toggle="modal" data-target="#exampleModal">
             Link existing entries
           </a>
@@ -219,7 +216,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
         fieldValue: newValue,
       })
 
-      $('#exampleModal').modal('hide')
+      requestAnimationFrame(() =>
+        $('#exampleModal').modal('hide'),
+      )
     } catch (ex) {
       this.setState({
         error: ex,
