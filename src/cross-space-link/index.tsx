@@ -6,6 +6,7 @@ import get from 'lodash-es/get'
 import has from 'lodash-es/has'
 import {Component, h, render} from 'preact'
 
+import { AsyncErrorHandler } from '../lib/async-error-handler'
 import { injectBootstrap } from '../lib/utils'
 const template = require('es6-dynamic-template')
 
@@ -24,7 +25,7 @@ interface IAppState {
   fieldValue: IFieldValue | null,
   link: Entry<any> | null,
   possibilities: Array<Entry<any>>,
-  loading: boolean,
+  wait: boolean,
   error: any | null
 }
 
@@ -40,6 +41,7 @@ interface IInstanceParams {
 
 export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState> {
   private client: ContentfulClientApi
+  private readonly errorHandler = new AsyncErrorHandler(this)
 
   constructor(props: FieldExtensionSDK, context?: any) {
     super(props, context)
@@ -47,10 +49,14 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     this.state = {
       fieldValue: null,
       link: null,
-      loading: false,
+      wait: false,
       possibilities: [],
       error: null,
     }
+
+    this.loadLink = this.errorHandler.wrap(this, this.loadLink)
+    this.loadPossibilities = this.errorHandler.wrap(this, this.loadPossibilities)
+    this.removeLink = this.errorHandler.wrap(this, this.removeLink)
   }
 
   public params(): IInstanceParams {
@@ -84,7 +90,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   }
 
   public render() {
-    const { link, fieldValue, loading, error } = this.state
+    const { link, fieldValue, wait: loading, error } = this.state
     const params = this.params()
 
     return <div className={`cross-space-link ${error ? 'error' : ''} ${loading ? 'loading disabled' : ''}`}>
@@ -159,56 +165,41 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       return
     }
 
-    try {
-      this.setState({ loading: true, error: null })
-
-      const query: { [prop: string]: string } = {}
-      if (params.value) {
-        if (!params.contentType) {
-          throw new Error(`Cannot search for entry by value '${params.value}' without setting contentType parameter`)
-        }
-        query.content_type = params.contentType
-
-        if (/^sys/.test(params.value) || /^fields/.test(params.value)) {
-          query[params.value] = fieldValue
-        } else {
-          query['fields.' + params.value] = fieldValue
-        }
-      } else {
-        query['sys.id'] = fieldValue
+    const query: { [prop: string]: string } = {}
+    if (params.value) {
+      if (!params.contentType) {
+        throw new Error(`Cannot search for entry by value '${params.value}' without setting contentType parameter`)
       }
-      const entries = await this.client.getEntries(query)
+      query.content_type = params.contentType
 
-      this.setState({
-        link: entries.items[0],
-      })
-    } catch (ex) {
-      this.setState({ error: ex })
-    } finally {
-      this.setState({ loading: false })
+      if (/^sys/.test(params.value) || /^fields/.test(params.value)) {
+        query[params.value] = fieldValue
+      } else {
+        query['fields.' + params.value] = fieldValue
+      }
+    } else {
+      query['sys.id'] = fieldValue
     }
+    const entries = await this.client.getEntries(query)
+
+    this.setState({
+      link: entries.items[0],
+    })
   }
 
   private loadPossibilities = async () => {
-    try {
-      const entries = await this.client.getEntries<any>({
-        content_type: this.params().contentType,
-      })
+    const entries = await this.client.getEntries<any>({
+      content_type: this.params().contentType,
+    })
 
-      this.setState({
-        possibilities: entries.toPlainObject().items,
-      })
-    } catch (ex) {
-      this.setState({ error: ex })
-    }
+    this.setState({
+      possibilities: entries.toPlainObject().items,
+    })
   }
 
-  private selectLink = (entry: Entry<any>) => async (evt: any) => {
-    const sdk = this.props
-    this.setState({
-      loading: true,
-    })
-    try {
+  private selectLink = (entry: Entry<any>) =>
+    this.errorHandler.wrap(this, async (evt: any) => {
+      const sdk = this.props
       const newValue: IFieldValue = this.value(entry, this.params().value)
 
       await sdk.field.setValue(newValue)
@@ -219,37 +210,16 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       requestAnimationFrame(() =>
         $('#exampleModal').modal('hide'),
       )
-    } catch (ex) {
-      this.setState({
-        error: ex,
-      })
-    } finally {
-      this.setState({
-        loading: false,
-      })
-    }
-  }
+    })
 
   private removeLink = async (evt: any) => {
     const sdk = this.props
+
+    await sdk.field.removeValue()
     this.setState({
-      loading: true,
+      fieldValue: null,
+      link: null,
     })
-    try {
-      await sdk.field.removeValue()
-      this.setState({
-        fieldValue: null,
-        link: null,
-      })
-    } catch (ex) {
-      this.setState({
-        error: ex,
-      })
-    } finally {
-      this.setState({
-        loading: false,
-      })
-    }
   }
 
   private displayName(entry: Entry<any>, display: string | null): string {
