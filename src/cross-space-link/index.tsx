@@ -197,7 +197,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     })
   }
 
-  private selectLink = (entry: Entry<any>) =>
+  private selectLink = (entry: Entry<any>): (evt: any) => Promise<void> =>
     this.errorHandler.wrap(this, async (evt: any) => {
       const sdk = this.props
       const newValue: IFieldValue = this.value(entry, this.params().value)
