@@ -3,7 +3,7 @@
   "name": "Allows linking to objects in another space.",
   "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
   "fieldTypes": [
-    "Entry"
+    "Symbol"
   ],
   "parameters": {
     "instance": [
@@ -34,6 +34,12 @@
         "name": "Display field (or template)",
         "description": "A field or template string to be executed to create the entry's display name",
         "required": false
+      },
+      {
+        "id": "value",
+        "type": "Symbol",
+        "name": "Value field (or URL)",
+        "description": "A field on the entry, or a URL template to get the entry.  Defaults to 'sys.id'"
       }
     ]
   }

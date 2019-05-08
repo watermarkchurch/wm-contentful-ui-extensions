@@ -2,7 +2,10 @@ import {} from 'bootstrap'
 import {ContentfulClientApi, createClient, Entry, Field} from 'contentful'
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
+import get from 'lodash-es/get'
+import has from 'lodash-es/has'
 import {Component, h, render} from 'preact'
+
 import { injectBootstrap } from '../lib/utils'
 const template = require('es6-dynamic-template')
 
@@ -25,19 +28,14 @@ interface IAppState {
   error: any | null
 }
 
-interface IFieldValue {
-  sys: {
-    id: string,
-    type: 'Link',
-    linkType: 'Entry',
-  },
-}
+type IFieldValue = string
 
 interface IInstanceParams {
   space: string
   accessToken: string
-  contentType: string
-  display: string
+  contentType: string | null
+  display: string | null
+  value: string | null
 }
 
 export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState> {
@@ -125,7 +123,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
                 {this.state.possibilities.map((entry) => {
                   return <li>
                     <a onClick={this.selectLink(entry)}>
-                      {displayName(entry, params)}
+                      {this.displayName(entry, params.display)}
                     </a>
                   </li>
                 })}
@@ -145,7 +143,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     const { link } = this.state
 
     return <div>
-      {displayName(link, this.params())}
+      {this.displayName(link, this.params().display)}
       <a onClick={this.removeLink} className="btn btn-danger">
         Delete
       </a>
@@ -154,8 +152,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
   private loadLink = async () => {
     const { fieldValue } = this.state
+    const params = this.params()
 
-    if (!(fieldValue && fieldValue.sys && fieldValue.sys.id)) {
+    if (!(fieldValue)) {
       this.setState({
         fieldValue: null,
         link: null,
@@ -166,10 +165,25 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     try {
       this.setState({ loading: true, error: null })
 
-      const entry = await this.client.getEntry(fieldValue.sys.id)
+      const query: { [prop: string]: string } = {}
+      if (params.value) {
+        if (!params.contentType) {
+          throw new Error(`Cannot search for entry by value '${params.value}' without setting contentType parameter`)
+        }
+        query.content_type = params.contentType
+
+        if (/^sys/.test(params.value) || /^fields/.test(params.value)) {
+          query[params.value] = fieldValue
+        } else {
+          query['fields.' + params.value] = fieldValue
+        }
+      } else {
+        query['sys.id'] = fieldValue
+      }
+      const entries = await this.client.getEntries(query)
 
       this.setState({
-        link: entry,
+        link: entries.items[0],
       })
     } catch (ex) {
       this.setState({ error: ex })
@@ -198,13 +212,8 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       loading: true,
     })
     try {
-      const newValue: IFieldValue = {
-        sys: {
-          id: entry.sys.id,
-          type: 'Link',
-          linkType: 'Entry',
-        },
-      }
+      const newValue: IFieldValue = this.value(entry, this.params().value)
+
       await sdk.field.setValue(newValue)
       this.setState({
         fieldValue: newValue,
@@ -243,18 +252,37 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       })
     }
   }
+
+  private displayName(entry: Entry<any>, display: string | null): string {
+    if (!display) {
+      return entry.fields[Object.keys(entry.fields)[0]]
+    }
+
+    return getOrTemplate(entry, display)
+  }
+
+  private value(entry: Entry<any>, selector: string | null): IFieldValue {
+    if (!selector) {
+      return entry.sys.id
+    }
+
+    return getOrTemplate(entry, selector)
+  }
 }
 
-function displayName(entry: Entry<any>, params: IInstanceParams) {
-  const fieldNames = Object.keys(entry.fields)
-
-  if (!params.display) {
-    return entry.fields[fieldNames[0]]
-  } else if (fieldNames.indexOf(params.display) >= 0) {
-    return entry.fields[params.display]
+function getOrTemplate(entry: Entry<any>, selector: string): string {
+  if (has(entry, selector)) {
+    return get(entry, selector)
+  } else if (has(entry.fields, selector)) {
+    return get(entry.fields, selector)
   } else {
-    return template(params.display, {
-      ...entry.sys,
+
+    return template(selector, {
+        // allow `${sys.space.sys.id} and ${fields.name}`
+      ...entry,
+        // allow `${id}` as shorthand
+      id: entry.sys.id,
+        // allow `${name}` as shorthand`
       ...entry.fields,
     })
   }
