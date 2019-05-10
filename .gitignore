@@ -6,3 +6,4 @@ src/*/*.html
 docs/**/*.html
 
 .vscode
+.envrc

@@ -17,15 +17,14 @@ const entry = entryPoints.reduce((hash, file) => {
 
 const htmlPlugins = Object.keys(entry).map(chunkName => 
   new HtmlWebpackPlugin({
-    filename: `${chunkName}.html`,
+    filename: `dist/${chunkName}.html`,
     chunks: [chunkName],
     template: 'index.template.html',
     templateParameters: {
       chunkName: chunkName,
       version: pkg.version,
       title: `${chunkName}@${pkg.version}`
-    },
-    inlineSource: '.(js|css)$' // embed all javascript and css inline
+    }
   })
 )
 
@@ -67,15 +66,16 @@ module.exports = {
 
   output: {
     path: __dirname,
-    filename: 'dist/[name]/index.js'
+    publicPath: '/',
+    filename: 'dist/[name]/index-[hash].js'
   },
   plugins: [
     ...htmlPlugins,
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
-      filename: "dist/[name]/style.css",
-      chunkFilename: "dist/[id].css"
+      filename: "dist/[name]/style-[hash].css",
+      chunkFilename: "dist/[id]-[hash].css"
     })
   ]
 } 

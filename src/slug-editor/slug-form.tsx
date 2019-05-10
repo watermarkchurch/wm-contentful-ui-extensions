@@ -1,4 +1,3 @@
-import { ICurrentField } from 'contentful-ui-extensions-sdk'
 import {Component, h} from 'preact'
 
 export interface ISlugFormProps {

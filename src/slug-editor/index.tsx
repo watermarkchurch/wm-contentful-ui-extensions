@@ -1,5 +1,5 @@
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
-import {IContentfulExtensionSdk, ILink} from 'contentful-ui-extensions-sdk'
+import {EntryAPI, FieldExtensionSDK, Link, SpaceAPI, Sys} from 'contentful-ui-extensions-sdk'
 import {Component, h, render} from 'preact'
 
 import { pathJoin, trimStart } from '../lib/utils'
@@ -10,7 +10,7 @@ const styles = require('./styles.scss')
 
 if (contentfulExtension) {
   contentfulExtension.init((extension) => {
-    render(<SlugEditor {...extension} />,
+    render(<SlugEditor {...extension as FieldExtensionSDK} />,
       document.getElementById('react-root'))
   })
 }
@@ -22,7 +22,7 @@ interface IAppState {
   warnings: string[]
 }
 
-export class SlugEditor extends Component<IContentfulExtensionSdk, IAppState> {
+export class SlugEditor extends Component<FieldExtensionSDK, IAppState> {
 
   constructor() {
     super()
@@ -114,16 +114,16 @@ export class SlugEditor extends Component<IContentfulExtensionSdk, IAppState> {
     }
   }
 
-  private async checkSubpages(subpages: Array<ILink<'Entry'>>): Promise<string[]> {
+  private async checkSubpages(subpages: Link[]): Promise<string[]> {
     const {parentSlug, fieldValue} = this.state
-    const { space, environment } = this.props.entry.getSys()
+    const { space } = this.props.entry.getSys() as { space: SpaceAPI }
 
     const entries = await this.props.space.getEntries({
       'content_type': 'page',
       'sys.id[in]': subpages.map((link) => link.sys.id).join(','),
     })
 
-    const warnings: string[] = entries.items.filter((i) => i).map((page) => {
+    const warnings: string[] = entries.items.filter((i) => i).map((page: EntryAPI) => {
       if (!page || !page.fields || !page.fields.slug || !page.fields.slug['en-US']) {
         return null
       }
@@ -155,14 +155,14 @@ export class SlugEditor extends Component<IContentfulExtensionSdk, IAppState> {
     // find the page pointing to this page
     const entries = await this.props.space.getEntries({
       'content_type': 'page',
-      'fields.subpages.sys.id': this.props.entry.getSys().id,
+      'fields.subpages.sys.id': (this.props.entry.getSys() as Sys).id,
     })
 
     if (entries.items.length <= 0) {
       return
     }
 
-    const parentSlug = entries.items[0].fields.slug['en-US']
+    const parentSlug = (entries.items[0] as EntryAPI).fields.slug['en-US']
     let fieldValue = this.state.fieldValue
     fieldValue = trimStart(fieldValue, parentSlug)
     fieldValue = trimStart(fieldValue, '/')

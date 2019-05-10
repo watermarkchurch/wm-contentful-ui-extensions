@@ -39,3 +39,31 @@ export function trimStart(toTrim: string, valueToRemove: string): string {
   }
   return toTrim
 }
+
+export function injectScript(src: string, integrity: string) {
+  const s = document.createElement('script')
+  s.type = 'text/javascript'
+  s.integrity = integrity
+  s.crossOrigin = 'anonymous'
+  s.src = src
+  $('head').append(s)
+}
+
+export function injectCss(href: string, integrity: string) {
+  const s = document.createElement('link')
+  s.rel = 'stylesheet'
+  s.href = href
+  s.integrity = integrity
+  s.crossOrigin = 'anonymous'
+  // Use any selector
+  $('head').append(s)
+}
+
+export function injectBootstrap() {
+  injectCss('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css',
+    'sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T')
+  injectScript('https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js',
+    'sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1')
+  injectScript('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js',
+    'sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM')
+}

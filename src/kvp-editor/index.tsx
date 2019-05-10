@@ -1,5 +1,5 @@
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
-import {IContentfulExtensionSdk} from 'contentful-ui-extensions-sdk'
+import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import {Component, h, render} from 'preact'
 import { IPair, KVPForm } from './kvp-form'
 
@@ -7,7 +7,7 @@ declare function require(module: string): any
 const styles = require('./style.scss')
 
 if (contentfulExtension) {
-  contentfulExtension.init((extension) => {
+  contentfulExtension.init((extension: FieldExtensionSDK) => {
     render(<KvpEditor {...extension} />,
       document.getElementById('react-root'))
     extension.window.startAutoResizer()
@@ -21,7 +21,7 @@ interface IAppState {
 
 type KvpList = Array<{ key: string, value: string}>
 
-export class KvpEditor extends Component<IContentfulExtensionSdk, IAppState> {
+export class KvpEditor extends Component<FieldExtensionSDK, IAppState> {
 
   constructor() {
     super()
