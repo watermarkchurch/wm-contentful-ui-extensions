@@ -66,16 +66,16 @@ module.exports = {
 
   output: {
     path: __dirname,
-    publicPath: '/',
-    filename: 'dist/[name]/index-[hash].js'
+    publicPath: '../',
+    filename: 'dist/[name]/index-[chunkhash].js'
   },
   plugins: [
     ...htmlPlugins,
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
-      filename: "dist/[name]/style-[hash].css",
-      chunkFilename: "dist/[id]-[hash].css"
+      filename: "dist/[name]/style-[chunkhash].css",
+      chunkFilename: "dist/[id]-[chunkhash].css"
     })
   ]
 } 
