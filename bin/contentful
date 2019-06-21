@@ -156,7 +156,7 @@ confirm() {
 }
 
 get_space_name() {
-  curlv -s https://api.contentful.com/spaces/$1?access_token=$CONTENTFUL_MANAGEMENT_TOKEN | jq -r .name | tr '[:upper:]' '[:lower:]'
+  curlv -H "Authorization: Bearer $CONTENTFUL_MANAGEMENT_TOKEN" -s https://api.contentful.com/spaces/$1 | jq -r .name | tr '[:upper:]' '[:lower:]'
 }
 
 # Man I wish I understood sed... https://stackoverflow.com/a/29060802
