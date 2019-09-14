@@ -27,14 +27,18 @@ interface IAppState {
 
 type IFieldValue = string
 
-interface ITranslationObject {
-  [key: string]: ITranslationObject | string | undefined
+// tslint:disable no-empty-interface
+interface IInstallationParams {
 }
 
 interface IInstanceParams {
 }
 
-export class ${name_titleized} extends Component<FieldExtensionSDK, IAppState> {
+interface IInvocationParams {
+}
+// tslint:enable no-empty-interface
+
+export class $ {name_titleized} extends Component < FieldExtensionSDK, IAppState > {
   private client: ContentfulClientApi
   private readonly errorHandler = new AsyncErrorHandler(this)
 
@@ -46,6 +50,14 @@ export class ${name_titleized} extends Component<FieldExtensionSDK, IAppState> {
       loading: false,
       error: null,
     }
+  }
+
+  public params(): IInstallationParams & IInstanceParams & IInvocationParams {
+    const params: contentfulExtension.ParametersAPI = this.props.parameters || ({} as any)
+    return Object.assign({},
+      params.installation,
+      params.instance,
+      params.invocation) as any
   }
 
   public componentDidMount() {
@@ -66,7 +78,7 @@ export class ${name_titleized} extends Component<FieldExtensionSDK, IAppState> {
     const {  loading, error } = this.state
     const params = this.params()
 
-    return <div className={[${name_dasherized}, error && 'error', loading && 'loading disabled'].join(' ')}>
+    return <div className={['${name_dasherized}', error && 'error', loading && 'loading disabled'].join(' ')}>
       {loading && <div class="loader"></div>}
       {error && <div>
           <h1>Error!</h1>
