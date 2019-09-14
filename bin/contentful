@@ -323,7 +323,7 @@ dev() {
   confirm "Continue?" || exit -1
 
   pushd src/$extension_name
-  $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" --name "${extension_name}-$USER-dev"  \
+  $CONTENTFUL_CLI extension update --force --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" --name "${extension_name}-$USER-dev"  \
     --src "https://localhost:8080/dist/${extension_name}.html"
   popd
 }
