@@ -1,0 +1,12 @@
+{
+  "id": "${name_dasherized}",
+  "name": "",
+  "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
+  "fieldTypes": [
+    "Symbol"
+  ],
+  "parameters": {
+    "instance": [
+    ]
+  }
+}

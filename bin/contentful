@@ -21,6 +21,11 @@ logerr() {
   >&2 echo -e "${COLOR_RED}$@${COLOR_NC}"
 }
 
+panic() {
+  >&2 echo -e "${COLOR_RED}$@${COLOR_NC}";
+  exit 1
+}
+
 curlv() {
   logv "curl" $@
   curl "$@"
@@ -36,6 +41,9 @@ execv() {
 usage() {
   echo "$0 <command> [opts]
   Commands:
+    new
+      Templates a new editor extension in the src folder
+
     create
       Creates an extension in the space pointing to the Github Pages hosting
       for the selected version.
@@ -59,7 +67,7 @@ parse_args() {
   OPTIND=1
   local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$s" in
-    create|delete|dev|template|help|h|\?)
+    create|delete|dev|template|new|help|h|\?)
       export subcommand=$s
       OPTIND=2
       ;;
@@ -210,6 +218,18 @@ select_version() {
   done
 }
 
+FIELD_TYPES=(Symbol Text Integer Number Date Boolean Object Location Array Link)
+select_field_type() {
+  PS3="Select field type: "
+  select type in "${FIELD_TYPES[@]}"
+  do
+    if [[ ! -z "$type" ]]; then
+      echo "$type"
+      break;
+    fi
+  done
+}
+
 select_extension() {
   [[ ! -z "$CONTENTFUL_ENVIRONMENT" ]] && path="/environments/$CONTENTFUL_ENVIRONMENT"
 
@@ -308,18 +328,50 @@ dev() {
   popd
 }
 
+
+new() {
+  export name="$1"
+  [[ ! -z "$name" ]] || read -rp "name: " name
+  [[ ! -z "$name" ]] || panic "Must provide name"
+  shift || true
+  export symbol="$1"
+  [[ ! -z "$symbol" ]] || symbol=$(select_field_type)
+  [[ ! -z "$symbol" ]] || panic "Must provide symbol"
+  shift || true
+
+  export desc="$@"
+  [[ ! -z "$desc" ]] || read -rp "description: " desc
+
+  export name_dasherized=$(node -e "console.log(require('inflection').dasherize('$name'.toLowerCase()))")
+  [[ ! -z "$name_dasherized" ]] || panic "failed to dasherize name"
+  export name_titleized=$(node -e "console.log(require('inflection').titleize('$name_dasherized').replace('-', ''))")
+  [[ ! -z "$name_titleized" ]] || panic "failed to titleize name"
+
+  mkdir -p "src/${name_dasherized}"
+  for file in template/*; do
+  logv "templating ${file} to src/${name_dasherized}/$(basename $file)"
+    eval "cat <<EOF
+$(<$file)
+EOF" > "src/${name_dasherized}/$(basename $file)" 2> /dev/null
+  done
+
+}
+
 case $subcommand in 
   create)
-    create $@
+    create "$@"
     ;;
   delete)
-    delete $@
+    delete "$@"
     ;;
   dev)
-    dev $@
+    dev "$@"
     ;;
   template)
-    template $@
+    template "$@"
+    ;;
+  new)
+    new "$@"
     ;;
   help|h|\?)
     usage

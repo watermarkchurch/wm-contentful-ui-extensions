@@ -11,6 +11,7 @@
     "test": "NODE_ENV=test karma start",
     "test-watch": "NODE_ENV=test karma start --auto-watch --no-single-run",
     "lint": "tslint src/**/*.ts?\\(x\\)",
+    "fix": "tslint src/**/*.ts?\\(x\\) --fix",
     "clean": "rm -r dist; git checkout -- docs; true",
     "prepublishOnly": "yarn run clean && yarn run build"
   },
