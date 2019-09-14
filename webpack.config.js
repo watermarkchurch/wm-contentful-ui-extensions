@@ -63,10 +63,8 @@ module.exports = {
     'contentful-ui-extensions-sdk': 'window.contentfulExtension',
     'jquery': 'jQuery'
   },
-
   output: {
     path: __dirname,
-    publicPath: '../',
     filename: 'dist/[name]/index-[chunkhash].js'
   },
   plugins: [

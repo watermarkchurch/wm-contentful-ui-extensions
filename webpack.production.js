@@ -18,6 +18,11 @@ module.exports = merge(common, {
     // https://github.com/webpack/webpack/issues/6389#issuecomment-466712313
     minimizer: [new TerserPlugin()]
   },
+  output: {
+    path: __dirname,
+    publicPath: '../',
+    filename: 'dist/[name]/index-[chunkhash].js'
+  },
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
