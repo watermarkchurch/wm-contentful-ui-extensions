@@ -67,7 +67,7 @@ parse_args() {
   OPTIND=1
   local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$s" in
-    create|delete|dev|template|new|help|h|\?)
+    create|delete|dev|new|help|h|\?)
       export subcommand=$s
       OPTIND=2
       ;;
@@ -366,9 +366,6 @@ case $subcommand in
     ;;
   dev)
     dev "$@"
-    ;;
-  template)
-    template "$@"
     ;;
   new)
     new "$@"
