@@ -15,5 +15,9 @@
     "jsxFactory": "h",
 
     "sourceMap": true
-  }  
+  },
+  "exclude": [
+    "node_modules",
+    "template"
+  ]
 }
