@@ -117,8 +117,10 @@ export class SectionPreview extends Component<FieldExtensionSDK, IAppState> {
     }
 
     return <div className={['section-preview'].join(' ')}>
-      <div>&nbsp;</div>
-      {loading && <div className="loading-bar"></div>}
+      <div className="d-flex align-items-end">
+        <a className="badge badge-success" onClick={this.reload}><i className="material-icons">refresh</i></a>
+        <div className="loader" style={{ visibility: loading ? 'visible' : 'hidden' }}></div>
+      </div>
       <iframe src={clearUrl ? '' : this.renderUrl()} onLoad={(evt) => this.onLoad(evt)}>
       </iframe>
     </div>
