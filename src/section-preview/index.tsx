@@ -80,14 +80,15 @@ export class SectionPreview extends Component<FieldExtensionSDK, IAppState> {
 
     Object.keys(sdk.entry.fields)
       .forEach((fieldName) => {
-        sdk.entry.fields[fieldName].onValueChanged((newValue) => {
+        const onValueChanged = (newValue: any) => {
           const fields = {
             ...this.state.fields,
           }
           fields[fieldName] = newValue
           this.setState({fields})
           this.reload()
-        })
+        }
+        sdk.entry.fields[fieldName].onValueChanged(onValueChanged as any, undefined)
       })
   }
 
