@@ -324,6 +324,7 @@ dev() {
 
   pushd src/$extension_name
   $CONTENTFUL_CLI extension update --force --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" --name "${extension_name}-$USER-dev"  \
+    --management-token "$CONTENTFUL_MANAGEMENT_TOKEN" \
     --src "https://localhost:8080/dist/${extension_name}.html"
   popd
 }
