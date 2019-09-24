@@ -44,8 +44,8 @@ usage() {
     new
       Templates a new editor extension in the src folder
 
-    create
-      Creates an extension in the space pointing to the Github Pages hosting
+    install
+      Installs an extension in the space pointing to the Github Pages hosting
       for the selected version.
 
     delete
@@ -67,7 +67,7 @@ parse_args() {
   OPTIND=1
   local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$s" in
-    create|delete|dev|new|help|h|\?)
+    install|delete|dev|new|help|h|\?)
       export subcommand=$s
       OPTIND=2
       ;;
@@ -195,7 +195,7 @@ all_versions() {
 select_package() {
   local packages=($(for D in src/*/extension.json; do echo $(basename $(dirname $D)); done))
   logv "packages: ${packages[@]}"
-  PS3="Select which extension to create in space ${CONTENTFUL_SPACE_ID}: "
+  PS3="Select which extension to install in space ${CONTENTFUL_SPACE_ID}: "
   select package in "${packages[@]}"
   do
     if [[ ! -z "$package" ]]; then
@@ -253,8 +253,8 @@ set -e
 
 # *** Commands ***
 
-# Example: bin/contentful create -s 1xab -e gburgett slug-editor
-create() {
+# Example: bin/contentful install -s 1xab -e gburgett slug-editor
+install() {
 
   require_environment
   space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
@@ -272,12 +272,13 @@ create() {
   [[ -z "$extension_version" ]] && extension_version=$(select_version)
   extension="$extension_name@$extension_version"
 
-  echo -e "${COLOR_LCYAN}This will create the extension ${COLOR_YELLOW}$extension${COLOR_LCYAN} in $space_name${COLOR_NC}"
+  echo -e "${COLOR_LCYAN}This will install the extension ${COLOR_YELLOW}${extension_name} v${extension_version}${COLOR_LCYAN} in $space_name${COLOR_NC}"
   confirm "Continue?" || exit -1
   export YES='-y' # don't keep bugging the user
 
   pushd src/$extension_name
   $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}" \
+    --management-token "$CONTENTFUL_MANAGEMENT_TOKEN" \
     --src "https://watermarkchurch.github.io/wm-contentful-ui-extensions/${extension_version}/${extension_name}.html"
   popd
 }
@@ -359,8 +360,8 @@ EOF" > "src/${name_dasherized}/$(basename $file)" 2> /dev/null
 }
 
 case $subcommand in 
-  create)
-    create "$@"
+  install)
+    install "$@"
     ;;
   delete)
     delete "$@"
