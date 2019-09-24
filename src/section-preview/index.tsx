@@ -34,10 +34,10 @@ interface IAppState {
 type IFieldValue = string
 
 interface IInstallationParams {
-  renderUrl: string
 }
 
 interface IInstanceParams {
+  renderUrl: string
 }
 
 interface IInvocationParams {
