@@ -54,7 +54,7 @@ jobs:
       - run: yarn install
       - run: yarn run build
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-      - run: yarn publish
+      - run: npm publish
 workflows:
   version: 2
   build_and_deploy:
