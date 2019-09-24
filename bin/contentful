@@ -21,6 +21,11 @@ logerr() {
   >&2 echo -e "${COLOR_RED}$@${COLOR_NC}"
 }
 
+panic() {
+  >&2 echo -e "${COLOR_RED}$@${COLOR_NC}";
+  exit 1
+}
+
 curlv() {
   logv "curl" $@
   curl "$@"
@@ -36,8 +41,11 @@ execv() {
 usage() {
   echo "$0 <command> [opts]
   Commands:
-    create
-      Creates an extension in the space pointing to the Github Pages hosting
+    new
+      Templates a new editor extension in the src folder
+
+    install
+      Installs an extension in the space pointing to the Github Pages hosting
       for the selected version.
 
     delete
@@ -59,7 +67,7 @@ parse_args() {
   OPTIND=1
   local s=$(echo "$1" | tr '[:upper:]' '[:lower:]')
   case "$s" in
-    create|delete|dev|template|help|h|\?)
+    install|delete|dev|new|help|h|\?)
       export subcommand=$s
       OPTIND=2
       ;;
@@ -156,7 +164,7 @@ confirm() {
 }
 
 get_space_name() {
-  curlv -s https://api.contentful.com/spaces/$1?access_token=$CONTENTFUL_MANAGEMENT_TOKEN | jq -r .name | tr '[:upper:]' '[:lower:]'
+  curlv -H "Authorization: Bearer $CONTENTFUL_MANAGEMENT_TOKEN" -s https://api.contentful.com/spaces/$1 | jq -r .name | tr '[:upper:]' '[:lower:]'
 }
 
 # Man I wish I understood sed... https://stackoverflow.com/a/29060802
@@ -187,7 +195,7 @@ all_versions() {
 select_package() {
   local packages=($(for D in src/*/extension.json; do echo $(basename $(dirname $D)); done))
   logv "packages: ${packages[@]}"
-  PS3="Select which extension to create in space ${CONTENTFUL_SPACE_ID}: "
+  PS3="Select which extension to install in space ${CONTENTFUL_SPACE_ID}: "
   select package in "${packages[@]}"
   do
     if [[ ! -z "$package" ]]; then
@@ -205,6 +213,18 @@ select_version() {
   do
     if [[ ! -z "$version" ]]; then
       echo "$version"
+      break;
+    fi
+  done
+}
+
+FIELD_TYPES=(Symbol Text Integer Number Date Boolean Object Location Array Link)
+select_field_type() {
+  PS3="Select field type: "
+  select type in "${FIELD_TYPES[@]}"
+  do
+    if [[ ! -z "$type" ]]; then
+      echo "$type"
       break;
     fi
   done
@@ -233,8 +253,8 @@ set -e
 
 # *** Commands ***
 
-# Example: bin/contentful create -s 1xab -e gburgett slug-editor
-create() {
+# Example: bin/contentful install -s 1xab -e gburgett slug-editor
+install() {
 
   require_environment
   space_name=$(get_space_name $CONTENTFUL_SPACE_ID)
@@ -252,12 +272,13 @@ create() {
   [[ -z "$extension_version" ]] && extension_version=$(select_version)
   extension="$extension_name@$extension_version"
 
-  echo -e "${COLOR_LCYAN}This will create the extension ${COLOR_YELLOW}$extension${COLOR_LCYAN} in $space_name${COLOR_NC}"
+  echo -e "${COLOR_LCYAN}This will install the extension ${COLOR_YELLOW}${extension_name} v${extension_version}${COLOR_LCYAN} in $space_name${COLOR_NC}"
   confirm "Continue?" || exit -1
   export YES='-y' # don't keep bugging the user
 
   pushd src/$extension_name
   $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}" \
+    --management-token "$CONTENTFUL_MANAGEMENT_TOKEN" \
     --src "https://watermarkchurch.github.io/wm-contentful-ui-extensions/${extension_version}/${extension_name}.html"
   popd
 }
@@ -303,23 +324,53 @@ dev() {
   confirm "Continue?" || exit -1
 
   pushd src/$extension_name
-  $CONTENTFUL_CLI extension create --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" --name "${extension_name}-$USER-dev"  \
+  $CONTENTFUL_CLI extension update --force --space-id "$CONTENTFUL_SPACE_ID" $ENV --id "${extension_name}-$USER-dev" --name "${extension_name}-$USER-dev"  \
+    --management-token "$CONTENTFUL_MANAGEMENT_TOKEN" \
     --src "https://localhost:8080/dist/${extension_name}.html"
   popd
 }
 
+
+new() {
+  export name="$1"
+  [[ ! -z "$name" ]] || read -rp "name: " name
+  [[ ! -z "$name" ]] || panic "Must provide name"
+  shift || true
+  export symbol="$1"
+  [[ ! -z "$symbol" ]] || symbol=$(select_field_type)
+  [[ ! -z "$symbol" ]] || panic "Must provide symbol"
+  shift || true
+
+  export desc="$@"
+  [[ ! -z "$desc" ]] || read -rp "description: " desc
+
+  export name_dasherized=$(node -e "console.log(require('inflection').dasherize('$name'.toLowerCase()))")
+  [[ ! -z "$name_dasherized" ]] || panic "failed to dasherize name"
+  export name_titleized=$(node -e "console.log(require('inflection').titleize('$name_dasherized').replace('-', ''))")
+  [[ ! -z "$name_titleized" ]] || panic "failed to titleize name"
+
+  mkdir -p "src/${name_dasherized}"
+  for file in template/*; do
+  logv "templating ${file} to src/${name_dasherized}/$(basename $file)"
+    eval "cat <<EOF
+$(<$file)
+EOF" > "src/${name_dasherized}/$(basename $file)" 2> /dev/null
+  done
+
+}
+
 case $subcommand in 
-  create)
-    create $@
+  install)
+    install "$@"
     ;;
   delete)
-    delete $@
+    delete "$@"
     ;;
   dev)
-    dev $@
+    dev "$@"
     ;;
-  template)
-    template $@
+  new)
+    new "$@"
     ;;
   help|h|\?)
     usage

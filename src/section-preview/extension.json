@@ -1,0 +1,20 @@
+{
+  "id": "section-preview",
+  "name": "Section Preview",
+  "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
+  "fieldTypes": [
+    "Symbol"
+  ],
+  "parameters": {
+    "installation": [
+    ],
+    "instance": [
+      {
+        "id": "renderUrl",
+        "type": "Symbol",
+        "name": "Render URL",
+        "description": "An ES6 template string which defines the URL to GET to render this section."
+      }
+    ]
+  }
+}
