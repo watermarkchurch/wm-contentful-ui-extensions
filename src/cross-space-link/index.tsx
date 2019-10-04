@@ -33,6 +33,7 @@ interface IAppState {
   visiblePossibilities: IEntryValue[],
   wait?: boolean,
   error?: any | null
+  initialized: boolean
 }
 
 interface IInstallationParams {
@@ -62,8 +63,10 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       possibilities: [],
       visiblePossibilities: [],
       error: null,
+      initialized: false,
     }
 
+    this.componentDidMount = this.errorHandler.wrap(this, this.componentDidMount)
     this.loadLink = this.errorHandler.wrap(this, this.loadLink)
     this.loadPossibilities = this.errorHandler.wrap(this, this.loadPossibilities)
     this.clearValue = this.errorHandler.wrap(this, this.clearValue)
@@ -77,7 +80,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       params.invocation) as any
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     const sdk = this.props
 
     this.client = createClient({
@@ -89,12 +92,18 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       this.loadLink(newValue)
     })
 
-    this.loadLink(sdk.field && sdk.field.getValue())
-    this.loadPossibilities()
+    await Promise.all([
+      this.loadLink(sdk.field && sdk.field.getValue()),
+      this.loadPossibilities(),
+    ])
+
+    // initialize visible state
+    this.validate()
+    this.setState({ initialized: true })
   }
 
   public render() {
-    const { value, visiblePossibilities, wait: loading, error } = this.state
+    const { value, visiblePossibilities, wait: loading, initialized, error } = this.state
     const params = this.params()
 
     return <div className={`cross-space-link ${error ? 'error' : ''} ${loading ? 'loading disabled' : ''}`}>
@@ -105,7 +114,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
           </pre>
         </div>}
         <div className="">
-          <input className="cf-form-input" value={value ? value.label : ''}
+          <input className="cf-form-input" disabled={initialized == false} value={value ? value.label : ''}
             onChange={this.onChange} onInput={this.onKeyDown} />
         </div>
       <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
@@ -121,10 +130,15 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     </div>
   }
 
-  private onChange: JSX.EventHandler<Event> = (evt) => {
+  private onChange: JSX.EventHandler<Event> = () => {
+    this.validate()
+  }
+
+  private validate = () => {
     const sdk = this.props
 
     const { value } = this.state
+    sdk.field.setValue(value.value)
 
     if (!value || value.label.length == 0) {
       sdk.field.setInvalid(false)
@@ -136,10 +150,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   }
 
   private onKeyDown: JSX.EventHandler<KeyboardEvent> = (evt) => {
-    const newLabel = (evt.target as HTMLInputElement).value
+    const newLabel = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
     const { possibilities } = this.state
 
-    console.log('newLabel', newLabel)
     if (!newLabel) {
       this.setState({
         value: {
@@ -154,7 +167,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
     const toFind = newLabel.trim().toLowerCase()
     const found = possibilities.find((p) => p.label.trim().toLowerCase() == toFind)
-    console.log('found:', found)
+
     if (found) {
       this.selectPossibility(found)
     } else {
@@ -200,7 +213,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     this.setState({
       value: {
         value: fieldValue,
-        label: this.displayName(entry),
+        label: entry ? this.displayName(entry) : fieldValue,
         entry,
       },
     })
