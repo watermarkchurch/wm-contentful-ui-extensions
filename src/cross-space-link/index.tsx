@@ -67,9 +67,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     }
 
     this.componentDidMount = this.errorHandler.wrap(this, this.componentDidMount)
-    this.loadLink = this.errorHandler.wrap(this, this.loadLink)
     this.loadPossibilities = this.errorHandler.wrap(this, this.loadPossibilities)
-    this.clearValue = this.errorHandler.wrap(this, this.clearValue)
   }
 
   public params(): IInstallationParams & IInstanceParams & IInvocationParams {
@@ -88,17 +86,12 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       space: this.params().space,
     })
 
-    sdk.field.onValueChanged((newValue) => {
-      this.loadLink(newValue)
-    })
+    sdk.field.onValueChanged(this.onValueChanged)
 
-    await Promise.all([
-      this.loadLink(sdk.field && sdk.field.getValue()),
-      this.loadPossibilities(),
-    ])
+    await this.loadPossibilities()
 
     // initialize visible state
-    this.validate()
+    this.validate(this.state.value)
     this.setState({ initialized: true })
   }
 
@@ -116,7 +109,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
         <div className="col-sm-6">
           <input className="cf-form-input" disabled={initialized == false} value={value ? value.label : ''}
             list="possibilities" autocomplete="on"
-            onChange={this.onChange} onInput={this.onKeyDown} />
+            onInput={this.onKeyDown} />
         </div>
         <div className="col-sm-6">
           <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
@@ -135,36 +128,39 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     </div>
   }
 
-  private onChange: JSX.EventHandler<Event> = () => {
-    this.validate()
-  }
-
-  private validate = () => {
+  private update = async (value: IEntryValue | null) => {
     const sdk = this.props
 
-    const { value } = this.state
-    sdk.field.setValue(value.value)
+    await sdk.field.setValue(value ? value.value : null)
+    this.validate(value)
+  }
+
+  private validate = (value: IEntryValue | null) => {
+    const sdk = this.props
 
     if (!value || value.label.length == 0) {
       sdk.field.setInvalid(false)
       return
     }
 
-    const hasValidEntry = !!this.state.value.entry
+    const hasValidEntry = !!value.entry
     sdk.field.setInvalid(!hasValidEntry)
   }
 
   private onKeyDown: JSX.EventHandler<KeyboardEvent> = (evt) => {
     const newLabel = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
+    console.log('onKeyDown', newLabel)
     const { possibilities } = this.state
 
     if (!newLabel) {
+      const newValue: IEntryValue = {
+        entry: null,
+        label: newLabel,
+        value: newLabel,
+      }
+      this.update(newValue)
       this.setState({
-        value: {
-          entry: null,
-          label: newLabel,
-          value: newLabel,
-        },
+        value: newValue,
         visiblePossibilities: [],
       })
       return
@@ -172,56 +168,45 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
     const toFind = newLabel.trim().toLowerCase()
     const found = possibilities.find((p) => p.label.trim().toLowerCase() == toFind)
-
     if (found) {
-      this.selectPossibility(found)
-    } else {
+      this.update(found)
       this.setState({
-        value: {
-          entry: null,
-          label: newLabel,
-          value: newLabel,
-        },
+        value: found,
+        visiblePossibilities: [found],
+      })
+    } else {
+      const newValue: IEntryValue = {
+        entry: null,
+        label: newLabel,
+        value: newLabel,
+      }
+      this.update(newValue)
+      this.setState({
+        value: newValue,
         visiblePossibilities: possibilities.filter((p) => p.label.trim().toLowerCase().includes(toFind)),
       })
     }
   }
 
-  private loadLink = async (fieldValue: string | null) => {
-    const params = this.params()
-
-    if (!(fieldValue)) {
+  private onValueChanged = (newValue: string) => {
+    const { possibilities } = this.state
+    const found = possibilities.find((p) => p.value == newValue)
+    if (found) {
       this.setState({
-        value: null,
+        value: found,
       })
-      return
-    }
-
-    const query: { [prop: string]: string } = {}
-    if (params.value) {
-      if (!params.contentType) {
-        throw new Error(`Cannot search for entry by value '${params.value}' without setting contentType parameter`)
-      }
-      query.content_type = params.contentType
-
-      if (/^sys/.test(params.value) || /^fields/.test(params.value)) {
-        query[params.value] = fieldValue
-      } else {
-        query['fields.' + params.value] = fieldValue
-      }
+      this.validate(found)
     } else {
-      query['sys.id'] = fieldValue
+      const value: IEntryValue = {
+        entry: null,
+        label: newValue,
+        value: newValue,
+      }
+      this.setState({
+        value,
+      })
+      this.validate(value)
     }
-    const entries = await this.client.getEntries(query)
-    const entry = entries.items[0]
-
-    this.setState({
-      value: {
-        value: fieldValue,
-        label: entry ? this.displayName(entry) : fieldValue,
-        entry,
-      },
-    })
   }
 
   private loadPossibilities = async () => {
@@ -246,23 +231,13 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   }
 
   private selectPossibility = (value: IEntryValue) =>
-    this.errorHandler.wrap(this, async (evt?: any) => {
-      const sdk = this.props
+    (evt: any) => {
+      this.update(value)
       this.setState({
         value,
         visiblePossibilities: [value],
       })
-      await sdk.field.setValue(value.value)
-    })
-
-  private clearValue = async (evt: any) => {
-    const sdk = this.props
-
-    await sdk.field.removeValue()
-    this.setState({
-      value: null,
-    })
-  }
+    }
 
   private displayName(entry: Entry<any>, display: string | null = this.params().display): string {
     if (!display) {
