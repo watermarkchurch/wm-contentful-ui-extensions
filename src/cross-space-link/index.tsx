@@ -91,7 +91,8 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     await this.loadPossibilities()
 
     // initialize visible state
-    this.validate(this.state.value)
+    const value: string = sdk.field.getValue()
+    this.onValueChanged(value)
     this.setState({ initialized: true })
   }
 
@@ -138,7 +139,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   private validate = (value: IEntryValue | null) => {
     const sdk = this.props
 
-    if (!value || value.label.length == 0) {
+    if (!value || !value.label || value.label.length == 0) {
       sdk.field.setInvalid(false)
       return
     }
@@ -149,7 +150,6 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
   private onKeyDown: JSX.EventHandler<KeyboardEvent> = (evt) => {
     const newLabel = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
-    console.log('onKeyDown', newLabel)
     const { possibilities } = this.state
 
     if (!newLabel) {
@@ -190,6 +190,11 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
   private onValueChanged = (newValue: string) => {
     const { possibilities } = this.state
+
+    if (possibilities.length == 0) {
+      return
+    }
+
     const found = possibilities.find((p) => p.value == newValue)
     if (found) {
       this.setState({
