@@ -104,7 +104,6 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
 
   public render() {
     const { value, visiblePossibilities, wait: loading, initialized, error } = this.state
-    const params = this.params()
 
     return <div className={`cross-space-link ${error ? 'error' : ''} ${loading ? 'loading disabled' : ''}`}>
       {error && <div>
@@ -115,6 +114,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
         </div>}
         <div className="">
           <input className="cf-form-input" disabled={initialized == false} value={value ? value.label : ''}
+            list="possibilities" autocomplete="on"
             onChange={this.onChange} onInput={this.onKeyDown} />
         </div>
       <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
@@ -127,6 +127,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
           </li>
         })}
       </ul>
+      <datalist id="possibilities">
+        {visiblePossibilities.map((v) => <option>{v.label}</option>)}
+      </datalist>
     </div>
   }
 
