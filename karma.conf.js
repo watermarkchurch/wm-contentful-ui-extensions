@@ -1,5 +1,28 @@
 const webpackConfig = require('./webpack.test.js')
 
+var os = require('os')
+const child_process = require("child_process")
+
+const isTestFile = (l) => /\.spec\.ts(x)?/.test(l)
+let files = process.argv.filter(isTestFile)
+if (files.length == 0) {
+  try {
+    const result = child_process.execSync('git diff --name-only && git ls-files --others --exclude-standard').toString()
+    files.push(...result.split(os.EOL)
+      .filter(isTestFile))
+  } catch(ex) {
+    console.error(ex)
+  }
+}
+
+if (files.length == 0) {
+  files = [
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx"
+  ]
+}
+console.log('Karma run', files)
+
 module.exports = function(config) {
   config.set({
     basePath: "",
@@ -14,7 +37,9 @@ module.exports = function(config) {
       "karma-mocha-reporter",
       "karma-sourcemap-loader"
     ],
-    files: [ "src/**/*.spec.ts", "src/**/*.spec.tsx" ],
+    files: [
+      ...files,
+    ],
     exclude: [],
     webpack: webpackConfig,
     preprocessors: {
