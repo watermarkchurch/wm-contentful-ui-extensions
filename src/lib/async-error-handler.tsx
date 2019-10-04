@@ -1,11 +1,12 @@
-import {Component, h, render} from 'preact'
-
 // tslint:disable:max-classes-per-file
 
-type ErrorHandlingComponent = Component<any, {
-  error?: Error,
-  wait?: boolean,
-}>
+interface IErrorHandlingComponent {
+  state: {
+    error?: Error,
+    wait?: boolean,
+  },
+  setState(newState: Partial<{ error: Error, wait: boolean}>): any,
+}
 
 interface IErrorHandlingOptions {
   propagate?: boolean
@@ -21,7 +22,7 @@ type AsyncMethod = (...args: any[]) => Promise<any>
  * @param fn The async error handling function to bind
  */
 export function withErrorHandling<F extends AsyncMethod>(
-  component: ErrorHandlingComponent,
+  component: IErrorHandlingComponent,
   fn: F,
   options?: IErrorHandlingOptions,
 ) {
@@ -33,7 +34,7 @@ export function withErrorHandling<F extends AsyncMethod>(
  * ErrorHandlingComponent
  */
 export class AsyncErrorHandler {
-  constructor(private target: ErrorHandlingComponent) {
+  constructor(private target: IErrorHandlingComponent) {
     this.setTarget = this.setTarget.bind(this)
   }
 
@@ -46,7 +47,7 @@ export class AsyncErrorHandler {
    * @returns A wrapped version of that function
    */
   public wrap<F extends AsyncMethod>(
-      source: Component,
+      source: any,
       fn: F,
       options?: IErrorHandlingOptions,
     ): F {
@@ -93,7 +94,7 @@ export class AsyncErrorHandler {
         }
       }
 
-      function setState(state: ErrorHandlingComponent['state']) {
+      function setState(state: IErrorHandlingComponent['state']) {
         if (self.target) { self.target.setState(state) }
         if (source && source !== self.target) {
           source.setState(state)
@@ -114,7 +115,7 @@ export class AsyncErrorHandler {
    *       <OtherAsyncComponent errorHandler={this.errorHandler} />
    * ```
    */
-  public setTarget(element: ErrorHandlingComponent) {
+  public setTarget(element: IErrorHandlingComponent) {
     this.target = element
   }
 }
