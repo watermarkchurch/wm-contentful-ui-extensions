@@ -105,28 +105,30 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   public render() {
     const { value, visiblePossibilities, wait: loading, initialized, error } = this.state
 
-    return <div className={`cross-space-link ${error ? 'error' : ''} ${loading ? 'loading disabled' : ''}`}>
-      {error && <div>
-          <h1>Error!</h1>
-          <pre>
-            {error.message}
-          </pre>
-        </div>}
-        <div className="">
+    return <div className={`cross-space-link container-fluid ${error ? 'error' : ''}`}>
+      <div className="row">
+        {error && <div>
+            <h1>Error!</h1>
+            <pre>
+              {error.message}
+            </pre>
+          </div>}
+        <div className="col-sm-6">
           <input className="cf-form-input" disabled={initialized == false} value={value ? value.label : ''}
             list="possibilities" autocomplete="on"
             onChange={this.onChange} onInput={this.onKeyDown} />
         </div>
-      <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
-      <ul>
-        {visiblePossibilities.map((v) => {
-          return <li>
-            <a onClick={this.selectPossibility(v)}>
-              {v.label}
-            </a>
-          </li>
-        })}
-      </ul>
+        <div className="col-sm-6">
+          <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
+          <ul className="possibilities">
+            {visiblePossibilities.map((v) =>
+              <li className="possibilities__item" onClick={this.selectPossibility(v)}>
+                {v.label}
+              </li>,
+            )}
+          </ul>
+        </div>
+      </div>
       <datalist id="possibilities">
         {visiblePossibilities.map((v) => <option>{v.label}</option>)}
       </datalist>
@@ -180,7 +182,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
           label: newLabel,
           value: newLabel,
         },
-        visiblePossibilities: possibilities.filter((p) => p.label.trim().toLowerCase().startsWith(toFind)),
+        visiblePossibilities: possibilities.filter((p) => p.label.trim().toLowerCase().includes(toFind)),
       })
     }
   }

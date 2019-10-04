@@ -1,5 +1,19 @@
 .cross-space-link {
   min-height: 400px;
+
+  .possibilities {
+    list-style: none;
+    padding-left: 0;
+
+    &__item {
+      padding-left: 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: lightslategray;
+      }
+    }
+  }
 }
 
 .loader {
