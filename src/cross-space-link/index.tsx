@@ -1,5 +1,5 @@
 import {} from 'bootstrap'
-import {ContentfulClientApi, createClient, Entry, Field} from 'contentful'
+import {ContentfulClientApi, createClient, Entry} from 'contentful'
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import get from 'lodash-es/get'
@@ -166,8 +166,9 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       return
     }
 
-    const toFind = newLabel.trim().toLowerCase()
-    const found = possibilities.find((p) => p.label.trim().toLowerCase() == toFind)
+    const toFind = newLabel.replace(/\s+/, ' ').trim().toLowerCase()
+    const found = possibilities.find((p) => p.label.replace(/\s+/, ' ').trim().toLowerCase() == toFind)
+
     if (found) {
       this.update(found)
       this.setState({
@@ -183,7 +184,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
       this.update(newValue)
       this.setState({
         value: newValue,
-        visiblePossibilities: possibilities.filter((p) => p.label.trim().toLowerCase().includes(toFind)),
+        visiblePossibilities: possibilities.filter((p) => p.label.replace(/\s+/, ' ').toLowerCase().includes(toFind)),
       })
     }
   }
