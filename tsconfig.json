@@ -9,6 +9,9 @@
     "typeRoots": [
       "./types"
     ],
+    "types": [
+      "@types/webpack-env"
+    ],
 
     /* preact */
     "jsx": "react",

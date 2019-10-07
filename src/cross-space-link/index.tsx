@@ -1,5 +1,5 @@
 import {} from 'bootstrap'
-import {ContentfulClientApi, createClient, Entry, Field} from 'contentful'
+import {ContentfulClientApi, createClient, Entry} from 'contentful'
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import get from 'lodash-es/get'
@@ -15,21 +15,29 @@ const styles = require('./style.scss')
 
 if (contentfulExtension) {
   contentfulExtension.init((extension: FieldExtensionSDK) => {
+    try {
     render(<CrossSpaceLinkEditor {...extension} />,
       document.getElementById('react-root'))
     extension.window.startAutoResizer()
+    } catch (ex) {
+      console.error('Error initializing', ex)
+    }
   })
 }
 
+interface IEntryValue { value: string, label: string, entry?: Entry<any> }
+
 interface IAppState {
-  fieldValue: IFieldValue | null,
-  link: Entry<any> | null,
-  possibilities: Array<Entry<any>>,
-  wait: boolean,
-  error: any | null
+  value: IEntryValue | null,
+  possibilities: IEntryValue[],
+  visiblePossibilities: IEntryValue[],
+  wait?: boolean,
+  error?: any | null
+  initialized: boolean
 }
 
-type IFieldValue = string
+interface IInstallationParams {
+}
 
 interface IInstanceParams {
   space: string
@@ -37,6 +45,9 @@ interface IInstanceParams {
   contentType: string | null
   display: string | null
   value: string | null
+}
+
+interface IInvocationParams {
 }
 
 export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState> {
@@ -47,182 +58,194 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     super(props, context)
 
     this.state = {
-      fieldValue: null,
-      link: null,
+      value: null,
       wait: false,
       possibilities: [],
+      visiblePossibilities: [],
       error: null,
+      initialized: false,
     }
 
-    this.loadLink = this.errorHandler.wrap(this, this.loadLink)
+    this.componentDidMount = this.errorHandler.wrap(this, this.componentDidMount)
     this.loadPossibilities = this.errorHandler.wrap(this, this.loadPossibilities)
-    this.removeLink = this.errorHandler.wrap(this, this.removeLink)
   }
 
-  public params(): IInstanceParams {
-    const params: any = (this.props.parameters && this.props.parameters.instance) || {}
-    return params
+  public params(): IInstallationParams & IInstanceParams & IInvocationParams {
+    const params: contentfulExtension.ParametersAPI = this.props.parameters || ({} as any)
+    return Object.assign({},
+      params.installation,
+      params.instance,
+      params.invocation) as any
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     const sdk = this.props
-
-    this.setState({
-      fieldValue: sdk.field && sdk.field.getValue(),
-    })
 
     this.client = createClient({
       accessToken: this.params().accessToken,
       space: this.params().space,
     })
 
-    sdk.field.onValueChanged((newValue) => {
-      this.setState({
-        fieldValue: newValue,
-        link: null,
-      })
+    sdk.field.onValueChanged(this.onValueChanged)
 
-      this.loadLink()
-    })
+    await this.loadPossibilities()
 
-    this.loadLink()
-    this.loadPossibilities()
+    // initialize visible state
+    const value: string = sdk.field.getValue()
+    this.onValueChanged(value)
+    this.setState({ initialized: true })
   }
 
   public render() {
-    const { link, fieldValue, wait: loading, error } = this.state
-    const params = this.params()
+    const { value, visiblePossibilities, wait: loading, initialized, error } = this.state
 
-    return <div className={`cross-space-link ${error ? 'error' : ''} ${loading ? 'loading disabled' : ''}`}>
-      {loading && <div class="loader"></div>}
-      {error && <div>
-          <h1>Error!</h1>
-          <pre>
-            {error.message}
-          </pre>
-        </div>}
-      {link ?
-        this.renderLink() :
-        <div>
-          {fieldValue && !loading && !error &&
-            <h4 className="error">Broken link!</h4>}
-          <a data-toggle="modal" data-target="#exampleModal">
-            Link existing entries
-          </a>
-        </div>}
-      <div className="modal" id="exampleModal"
-          tabIndex={-1} role="dialog"
-          aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Choose an entry</h5>
-              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <ul>
-                {this.state.possibilities.map((entry) => {
-                  return <li>
-                    <a onClick={this.selectLink(entry)}>
-                      {this.displayName(entry, params.display)}
-                    </a>
-                  </li>
-                })}
-              </ul>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-primary">Save changes</button>
-            </div>
-          </div>
+    return <div className={`cross-space-link container-fluid ${error ? 'error' : ''}`}>
+      <div className="row">
+        {error && <div>
+            <h1>Error!</h1>
+            <pre>
+              {error.message}
+            </pre>
+          </div>}
+        <div className="col-sm-6">
+          <input className="cf-form-input" disabled={initialized == false} value={value ? value.label : ''}
+            list="possibilities" autocomplete="on"
+            onInput={this.onKeyDown} />
+        </div>
+        <div className="col-sm-6">
+          <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
+          <ul className="possibilities">
+            {visiblePossibilities.map((v) =>
+              <li className="possibilities__item" onClick={this.selectPossibility(v)}>
+                {v.label}
+              </li>,
+            )}
+          </ul>
         </div>
       </div>
+      <datalist id="possibilities">
+        {visiblePossibilities.map((v) => <option>{v.label}</option>)}
+      </datalist>
     </div>
   }
 
-  private renderLink = () => {
-    const { link } = this.state
+  private update = async (value: IEntryValue | null) => {
+    const sdk = this.props
 
-    return <div>
-      {this.displayName(link, this.params().display)}
-      <a onClick={this.removeLink} className="btn btn-danger">
-        Delete
-      </a>
-    </div>
+    await sdk.field.setValue(value ? value.value : null)
+    this.validate(value)
   }
 
-  private loadLink = async () => {
-    const { fieldValue } = this.state
-    const params = this.params()
+  private validate = (value: IEntryValue | null) => {
+    const sdk = this.props
 
-    if (!(fieldValue)) {
+    if (!value || !value.label || value.label.length == 0) {
+      sdk.field.setInvalid(false)
+      return
+    }
+
+    const hasValidEntry = !!value.entry
+    sdk.field.setInvalid(!hasValidEntry)
+  }
+
+  private onKeyDown: JSX.EventHandler<KeyboardEvent> = (evt) => {
+    const newLabel = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
+    const { possibilities } = this.state
+
+    if (!newLabel) {
+      const newValue: IEntryValue = {
+        entry: null,
+        label: newLabel,
+        value: newLabel,
+      }
+      this.update(newValue)
       this.setState({
-        fieldValue: null,
-        link: null,
+        value: newValue,
+        visiblePossibilities: [],
       })
       return
     }
 
-    const query: { [prop: string]: string } = {}
-    if (params.value) {
-      if (!params.contentType) {
-        throw new Error(`Cannot search for entry by value '${params.value}' without setting contentType parameter`)
-      }
-      query.content_type = params.contentType
+    const toFind = newLabel.replace(/\s+/, ' ').trim().toLowerCase()
+    const found = possibilities.find((p) => p.label.replace(/\s+/, ' ').trim().toLowerCase() == toFind)
 
-      if (/^sys/.test(params.value) || /^fields/.test(params.value)) {
-        query[params.value] = fieldValue
-      } else {
-        query['fields.' + params.value] = fieldValue
-      }
+    if (found) {
+      this.update(found)
+      this.setState({
+        value: found,
+        visiblePossibilities: [found],
+      })
     } else {
-      query['sys.id'] = fieldValue
+      const newValue: IEntryValue = {
+        entry: null,
+        label: newLabel,
+        value: newLabel,
+      }
+      this.update(newValue)
+      this.setState({
+        value: newValue,
+        visiblePossibilities: possibilities.filter((p) => p.label.replace(/\s+/, ' ').toLowerCase().includes(toFind)),
+      })
     }
-    const entries = await this.client.getEntries(query)
+  }
 
-    this.setState({
-      link: entries.items[0],
-    })
+  private onValueChanged = (newValue: string) => {
+    const { possibilities } = this.state
+
+    if (possibilities.length == 0) {
+      return
+    }
+
+    const found = possibilities.find((p) => p.value == newValue)
+    if (found) {
+      this.setState({
+        value: found,
+      })
+      this.validate(found)
+    } else {
+      const value: IEntryValue = {
+        entry: null,
+        label: newValue,
+        value: newValue,
+      }
+      this.setState({
+        value,
+      })
+      this.validate(value)
+    }
   }
 
   private loadPossibilities = async () => {
-    const entries = await this.client.getEntries<any>({
+    const query = {
       content_type: this.params().contentType,
-    })
+    }
+    let entries = await this.client.getEntries<any>(query)
 
-    this.setState({
-      possibilities: entries.toPlainObject().items,
-    })
-  }
-
-  private selectLink = (entry: Entry<any>): (evt: any) => Promise<void> =>
-    this.errorHandler.wrap(this, async (evt: any) => {
-      const sdk = this.props
-      const newValue: IFieldValue = this.value(entry, this.params().value)
-
-      await sdk.field.setValue(newValue)
-      this.setState({
-        fieldValue: newValue,
+    const allPossibilities = entries.toPlainObject().items
+    while (entries.items.length + entries.skip < entries.total) {
+      // next page
+      entries = await this.client.getEntries<any>({
+        ...query,
+        skip: entries.items.length + entries.skip,
       })
+      allPossibilities.push(...entries.toPlainObject().items)
+    }
 
-      requestAnimationFrame(() =>
-        $('#exampleModal').modal('hide'),
-      )
-    })
-
-  private removeLink = async (evt: any) => {
-    const sdk = this.props
-
-    await sdk.field.removeValue()
     this.setState({
-      fieldValue: null,
-      link: null,
+      possibilities: allPossibilities.map(this.toEntryValue),
     })
   }
 
-  private displayName(entry: Entry<any>, display: string | null): string {
+  private selectPossibility = (value: IEntryValue) =>
+    (evt: any) => {
+      this.update(value)
+      this.setState({
+        value,
+        visiblePossibilities: [value],
+      })
+    }
+
+  private displayName(entry: Entry<any>, display: string | null = this.params().display): string {
     if (!display) {
       return entry.fields[Object.keys(entry.fields)[0]]
     }
@@ -230,12 +253,20 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
     return getOrTemplate(entry, display)
   }
 
-  private value(entry: Entry<any>, selector: string | null): IFieldValue {
+  private value(entry: Entry<any>, selector: string | null = this.params().value): string {
     if (!selector) {
       return entry.sys.id
     }
 
     return getOrTemplate(entry, selector)
+  }
+
+  private toEntryValue = (entry: Entry<any>): IEntryValue => {
+    return {
+      entry,
+      label: this.displayName(entry),
+      value: this.value(entry),
+    }
   }
 }
 

@@ -1,5 +1,19 @@
 .cross-space-link {
   min-height: 400px;
+
+  .possibilities {
+    list-style: none;
+    padding-left: 0;
+
+    &__item {
+      padding-left: 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: lightslategray;
+      }
+    }
+  }
 }
 
 .loader {
@@ -18,6 +32,14 @@
   height: 4px;
   background-color: #2980b9;
   animation: loading 2s linear infinite;
+}
+
+.errors {
+  color: red;
+}
+
+.warnings {
+  color: orange;
 }
 
 @keyframes loading {
