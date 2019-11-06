@@ -4955,9 +4955,9 @@ karma-chrome-launcher@^2.2.0:
     which "^1.2.1"
 
 karma-jquery@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/karma-jquery/-/karma-jquery-0.2.2.tgz#6bee93454d8b096bcc7815570a81e73fdddb5d6f"
-  integrity sha1-a+6TRU2LCWvMeBVXCoHnP93bXW8=
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/karma-jquery/-/karma-jquery-0.2.4.tgz#1512b608257aba3b8cf426cbc438d9759706efb6"
+  integrity sha512-NkEzqc+ulVlOASeQRZh07wB4mv1yUUQPp5natoqcTxl+oXwIB0Hu4/g3uCIJLzvEydAxD7IxWLhZuqIigsdBOQ==
 
 karma-mocha-reporter@^2.2.5:
   version "2.2.5"
