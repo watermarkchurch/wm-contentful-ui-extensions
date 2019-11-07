@@ -1,6 +1,5 @@
 import { ContentfulClientApi } from 'contentful'
 import { EntryAPI, FieldAPI, FieldExtensionSDK, SpaceAPI } from 'contentful-ui-extensions-sdk'
-import * as Path from 'path'
 import { FindWrapper, RenderContext } from 'preact-render-spy'
 import {render as renderToString} from 'preact-render-to-string'
 import * as sinon from 'sinon'
