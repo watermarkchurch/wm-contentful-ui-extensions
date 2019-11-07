@@ -1,5 +1,5 @@
 import {} from 'bootstrap'
-import {ContentfulClientApi, createClient, Entry} from 'contentful'
+import {ContentfulClientApi, createClient, Entry, EntryCollection, Field} from 'contentful'
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import get from 'lodash-es/get'
@@ -50,11 +50,15 @@ interface IInstanceParams {
 interface IInvocationParams {
 }
 
-export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState> {
+interface IProps extends FieldExtensionSDK {
+  client?: ContentfulClientApi
+}
+
+export class CrossSpaceLinkEditor extends Component<IProps, IAppState> {
   private client: ContentfulClientApi
   private readonly errorHandler = new AsyncErrorHandler(this)
 
-  constructor(props: FieldExtensionSDK, context?: any) {
+  constructor(props: IProps, context?: any) {
     super(props, context)
 
     this.state = {
@@ -81,7 +85,7 @@ export class CrossSpaceLinkEditor extends Component<FieldExtensionSDK, IAppState
   public async componentDidMount() {
     const sdk = this.props
 
-    this.client = createClient({
+    this.client = this.props.client || createClient({
       accessToken: this.params().accessToken,
       space: this.params().space,
     })

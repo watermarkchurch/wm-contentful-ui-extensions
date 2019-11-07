@@ -122,7 +122,9 @@ export class SectionPreview extends Component<FieldExtensionSDK, IAppState> {
         <a className="badge badge-success" onClick={this.reload}><i className="material-icons">refresh</i></a>
         <div className="loader" style={{ visibility: loading ? 'visible' : 'hidden' }}></div>
       </div>
-      <iframe src={clearUrl ? '' : this.renderUrl()} onLoad={(evt) => this.onLoad(evt)}>
+      <iframe src={clearUrl ? '' : this.renderUrl()}
+        sandbox="allow-scripts"
+        onLoad={(evt) => this.onLoad(evt)}>
       </iframe>
     </div>
   }
