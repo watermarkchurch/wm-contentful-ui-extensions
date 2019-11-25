@@ -64,7 +64,7 @@
     "sinon": "^7.5.0",
     "sinon-chai": "^3.0.0",
     "style-loader": "^1.0.0",
-    "terser-webpack-plugin": "^1.2.3",
+    "terser-webpack-plugin": "^2.2.1",
     "ts-lint": "^4.5.1",
     "ts-loader": "^6.2.1",
     "tslint-eslint-rules": "^5.3.1",
