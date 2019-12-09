@@ -1575,9 +1575,9 @@ contentful-batch-libs@^9.0.1:
     moment "^2.18.1"
 
 contentful-cli@^1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/contentful-cli/-/contentful-cli-1.1.5.tgz#a6d5323eebe9cff447c5bb8c9f884220d662a9ac"
-  integrity sha512-5ihiLbk6kOYvzzhst+YaR02GCnJlkJ4z0pYukHifShHPscsQPeO0MtekiXGe8hJR/cfg7UiTtKwKE4IxuHrQiQ==
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/contentful-cli/-/contentful-cli-1.2.1.tgz#629b4ac414cabed7492385984dd0941fa80b5085"
+  integrity sha512-ctn5xVx5tmz7RbFKHkwzsGJNk95EdSWQu7KOw6TVICV4LblO48LyDQ9QA08KsQdtKUbp5/GzlIuBC5SVfvQr7g==
   dependencies:
     ast-types "^0.11.5"
     bfj "^6.1.1"
@@ -1589,7 +1589,7 @@ contentful-cli@^1.1.5:
     command-exists "^1.2.7"
     contentful-export "^7.7.1"
     contentful-import "^7.6.1"
-    contentful-management "^5.11.2"
+    contentful-management "^5.12.0"
     contentful-migration "^1.0.6"
     emojic "^1.1.11"
     execa "^0.10.0"
@@ -1657,10 +1657,10 @@ contentful-import@^7.6.1:
     moment "^2.22.2"
     yargs "^12.0.1"
 
-contentful-management@^5.11.0, contentful-management@^5.11.2, contentful-management@^5.9.0:
-  version "5.11.3"
-  resolved "https://registry.yarnpkg.com/contentful-management/-/contentful-management-5.11.3.tgz#f6daafda46e0f1fd46633ab480a1780dc4ea2b0c"
-  integrity sha512-NXhG7KhGHKfm1nrR8v+8qDUZ/34uI0+suj9jgeU8rI9PgG99Nnar59VYuVoWq77zZ9TdDbaNy9Pu+mxkVM9fgA==
+contentful-management@^5.11.0, contentful-management@^5.12.0, contentful-management@^5.9.0:
+  version "5.12.0"
+  resolved "https://registry.yarnpkg.com/contentful-management/-/contentful-management-5.12.0.tgz#b40570adcd6791032b9ff3a18bb5a3cdabf2d0cd"
+  integrity sha512-uB19lrSK9q6V8plU8M7PBfZ96rny/Q7mh9pU1H8xmVFSRv7h/cGHZ3qV19HNtq6PWTGVq6i93jsO0RQmKbrHog==
   dependencies:
     axios "^0.19.0"
     contentful-sdk-core "^6.4.0"
