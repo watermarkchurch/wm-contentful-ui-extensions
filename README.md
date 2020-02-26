@@ -5,10 +5,13 @@ allow us to wrap our own custom UI logic around fields on a content type.
 
 ## Extensions:
 
-* [Cross-Space Link](tree/master/src/cross-space-link)
+* [kvp-editor](tree/master/src/kvp-editor)  
+    Stores key-value pairs in a JSON field
+    ![kvp-editor demo](readmedoc/kvp-editor.png)
+* [Cross-Space Link](tree/master/src/cross-space-link)  
     With a space ID and access token to the other space, it allows selecting an
     entry in that other space and putting it's ID in a Symbol field.
-    ![readmedoc/cross-space-link.gif]
+    ![cross-space link demo](readmedoc/cross-space-link.gif)
 
 ## How to use
 
