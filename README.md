@@ -3,6 +3,13 @@ This library hosts the Contentful UI extensions for Watermark Community Church.
 [Contentful UI Extensions](https://www.contentful.com/developers/docs/concepts/uiextensions/)
 allow us to wrap our own custom UI logic around fields on a content type.
 
+## Extensions:
+
+* [Cross-Space Link](tree/master/src/cross-space-link)
+    With a space ID and access token to the other space, it allows selecting an
+    entry in that other space and putting it's ID in a Symbol field.
+    ![readmedoc/cross-space-link.gif]
+
 ## How to use
 
 All the editor extensions are hosted via Github pages at
