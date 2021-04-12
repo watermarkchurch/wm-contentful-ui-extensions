@@ -4,7 +4,7 @@ import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import get from 'lodash-es/get'
 import has from 'lodash-es/has'
-import {Component, h, render} from 'preact'
+import {Component, h, JSX, render} from 'preact'
 
 import { AsyncErrorHandler } from '../lib/async-error-handler'
 import { injectBootstrap } from '../lib/utils'
@@ -152,7 +152,7 @@ export class CrossSpaceLinkEditor extends Component<IProps, IAppState> {
     sdk.field.setInvalid(!hasValidEntry)
   }
 
-  private onKeyDown: JSX.EventHandler<KeyboardEvent> = (evt) => {
+  private onKeyDown: JSX.GenericEventHandler<HTMLInputElement> = (evt) => {
     const newLabel = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
     const { possibilities } = this.state
 

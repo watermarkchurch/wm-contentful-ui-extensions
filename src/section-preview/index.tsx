@@ -1,9 +1,9 @@
 import {} from 'bootstrap'
 import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
-import * as JQuery from 'jquery'
+import JQuery from 'jquery'
 import debounce from 'lodash-es/debounce'
-import {Component, h, render} from 'preact'
+import {Component, h, JSX, render} from 'preact'
 
 import { injectBootstrap } from '../lib/utils'
 const template = require('es6-dynamic-template')

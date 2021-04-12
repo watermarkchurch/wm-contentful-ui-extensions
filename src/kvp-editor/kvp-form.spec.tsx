@@ -23,8 +23,8 @@ describe('<kvp-form />', () => {
     // assert
     const inputs = rendered.find('.form').find('input')
     expect(inputs.length).to.equal(2)
-    expect(inputs[0].attributes.id).to.equal('key')
-    expect(inputs[1].attributes.id).to.equal('value')
+    expect((inputs[0] as any).attributes.id).to.equal('key')
+    expect((inputs[1] as any).attributes.id).to.equal('value')
   })
 
   it('renders a table for displaying the pairs', () => {

@@ -2,8 +2,8 @@ import {expect} from 'chai'
 import {} from 'mocha'
 import {h} from 'preact'
 import {render} from 'preact-render-spy'
-import * as sinon from 'sinon'
-import * as sinonChai from 'sinon-chai'
+import sinon from 'sinon'
+import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
 import { stubSdk } from '../lib/spec-helpers'

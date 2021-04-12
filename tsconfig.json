@@ -2,6 +2,7 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "strictNullChecks": false,
+    "esModuleInterop": true,
     "lib": [
       "es6",
       "dom"

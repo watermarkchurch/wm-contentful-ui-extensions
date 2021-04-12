@@ -1,0 +1,10 @@
+{
+  "id": "qr-code-generator",
+  "name": "Creates QR codes from given text or a selected field",
+  "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
+  "fieldTypes": [
+    "Symbol"
+  ],
+  "parameters": {
+  }
+}
