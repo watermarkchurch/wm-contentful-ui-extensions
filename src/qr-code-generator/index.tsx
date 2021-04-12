@@ -139,6 +139,10 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
 
     this.code = new QRCode(this.qrcode.current, {
       text: newValue,
+      logo: 'https://watermarkchurch.github.io/wm-contentful-ui-extensions/images/logo-blue.svg',
+      logoWidth: 64,
+      logoHeight: 64,
+      drawer: 'canvas',
     })
   }
 }
