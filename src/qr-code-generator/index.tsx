@@ -14,18 +14,6 @@ const template = require('es6-dynamic-template')
 declare function require(module: string): any
 const styles = require('./style.scss')
 
-if (contentfulExtension) {
-  contentfulExtension.init((extension: FieldExtensionSDK) => {
-    try {
-    render(<QRCodeGenerator {...extension} />,
-      document.getElementById('react-root'))
-    extension.window.startAutoResizer()
-    } catch (ex) {
-      console.error('Error initializing', ex)
-    }
-  })
-}
-
 interface IEntryValue { value: string }
 
 interface IAppState {
@@ -44,7 +32,7 @@ interface IInstanceParams {
 interface IInvocationParams {
 }
 
-interface IProps extends FieldExtensionSDK {
+interface IProps extends Partial<FieldExtensionSDK> {
   client?: ContentfulClientApi
 }
 
@@ -78,10 +66,13 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
   public async componentDidMount() {
     const sdk = this.props
 
-    sdk.field.onValueChanged(this.onValueChanged)
+    let value: string | undefined = undefined
+    if (sdk && sdk.field) {
+      sdk.field.onValueChanged(this.onValueChanged)
 
-    // initialize visible state
-    const value: string = sdk.field.getValue()
+      // initialize visible state
+      value = sdk.field.getValue()
+    }
 
     this.onValueChanged(value)
     this.setState({ initialized: true })
@@ -114,14 +105,20 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
   private update = async (value: IEntryValue | null) => {
     const sdk = this.props
 
-    await sdk.field.setValue(value ? value.value : null)
+    if (sdk && sdk.field) {
+      await sdk.field.setValue(value ? value.value : null)
+    } else {
+      // call onValueChanged directly instead of waiting for round-trip through UI sdk
+      this.onValueChanged(value ? value.value : null)
+    }
     this.validate(value)
   }
 
   private validate = (value: IEntryValue | null) => {
     const sdk = this.props
-
-    sdk.field.setInvalid(false)
+    if (sdk && sdk.field) {
+      sdk.field.setInvalid(false)
+    }
   }
 
   private onKeyDown: JSX.GenericEventHandler<HTMLInputElement> = (evt) => {
@@ -136,7 +133,8 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
     })
   }
 
-  private onValueChanged = (newValue: string) => {
+  private onValueChanged = (newValue: string | undefined | null) => {
+    if (!this.qrcode.current) { return }
     $(this.qrcode.current).empty()
 
     this.code = new QRCode(this.qrcode.current, {
@@ -165,4 +163,8 @@ function getOrTemplate(entry: Entry<any>, selector: string): string {
 
 $(document).ready(() => {
   injectBootstrap()
+
+  // render without UI extension sdk for now
+  render(<QRCodeGenerator />,
+    document.getElementById('react-root')!)
 })
