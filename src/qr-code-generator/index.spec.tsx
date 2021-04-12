@@ -2,11 +2,10 @@ import {render} from '@testing-library/preact'
 import {expect} from 'chai'
 import {} from 'mocha'
 import {h} from 'preact'
-import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
-import { debug, emptyResponse, loadFixture, stubClient, stubSdk } from '../lib/spec-helpers'
+import { stubClient, stubSdk } from '../lib/spec-helpers'
 import {QRCodeGenerator} from './index'
 
 // tslint:disable: no-unused-expression

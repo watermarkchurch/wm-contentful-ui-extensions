@@ -1,5 +1,5 @@
-import {} from 'bootstrap'
-import contentfulExtension from 'contentful-ui-extensions-sdk'
+import type {} from 'bootstrap'
+import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import JQuery from 'jquery'
 import debounce from 'lodash-es/debounce'

@@ -1,6 +1,6 @@
-import {} from 'bootstrap'
+import type {} from 'bootstrap'
 import {ContentfulClientApi, createClient, Entry, EntryCollection, Field} from 'contentful'
-import contentfulExtension from 'contentful-ui-extensions-sdk'
+import * as contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import QRCode from 'easyqrcodejs'
 import get from 'lodash-es/get'

@@ -1,7 +1,5 @@
 import { ContentfulClientApi } from 'contentful'
 import { EntryAPI, FieldAPI, FieldExtensionSDK, SpaceAPI } from 'contentful-ui-extensions-sdk'
-import { FindWrapper, RenderContext } from 'preact-render-spy'
-import {render as renderToString} from 'preact-render-to-string'
 import * as sinon from 'sinon'
 
 const fakeSdk = {
@@ -57,10 +55,6 @@ export function stubClientResp(resp: any) {
     ...resp,
     toPlainObject: () => resp,
   }
-}
-
-export function debug(rendered: RenderContext<any, any> | FindWrapper<any, any>): string {
-  return renderToString(rendered.output(), null, { pretty: true, shallow: false, xml: false })
 }
 
 export function loadFixture(name: string): any {

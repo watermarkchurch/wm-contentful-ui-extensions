@@ -6,7 +6,7 @@ import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
-import { debug, emptyResponse, loadFixture, stubClient, stubClientResp, stubSdk } from '../lib/spec-helpers'
+import { emptyResponse, loadFixture, stubClient, stubClientResp, stubSdk } from '../lib/spec-helpers'
 import { wait } from '../lib/utils'
 import {CrossSpaceLinkEditor} from './index'
 
