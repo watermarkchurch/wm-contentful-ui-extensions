@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: cimg/node:15.14-browsers
+      - image: circleci/node:15.14-browsers
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -41,7 +41,7 @@ jobs:
       - run: yarn run lint
   publish:
     docker:
-      - image: cimg/node:15.14-browsers
+      - image: circleci/node:15.14-browsers
     steps:
       - checkout
       # Download and cache dependencies
