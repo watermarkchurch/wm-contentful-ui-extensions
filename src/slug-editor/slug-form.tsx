@@ -33,11 +33,11 @@ export class SlugForm extends Component<ISlugFormProps, {value: string}> {
     return (
       <div id="slugForm" class="cf-form-input" onClick={this.demandFocus}>
         { parentSlug &&
-          <span id="parent" title="This comes from the parent page and you can't change it here.">
+          <span id="parent" data-testid="parent" title="This comes from the parent page and you can't change it here.">
             {parentSlug}/
           </span>
         }
-        <span id="slug" contentEditable onFocus={this.onFocusGained} onBlur={this.onFocusLost}>
+        <span id="slug" data-testid="slug" contentEditable onFocus={this.onFocusGained} onBlur={this.onFocusLost}>
           {slug}
         </span>
       </div>

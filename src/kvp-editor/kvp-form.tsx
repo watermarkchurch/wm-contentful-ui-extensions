@@ -1,5 +1,5 @@
 import * as $ from 'jquery'
-import {Component, h, render} from 'preact'
+import {Component, h, JSX, render} from 'preact'
 
 export interface IPair { key: string, value: string }
 
@@ -25,61 +25,70 @@ export class KVPForm extends Component<IProps, IState> {
 
   public render() {
     const {items} = this.props
+    console.log('rerender', this.state.errors)
 
     return <div className="kvp-form">
         <div className="kvp-form__table">
           <table>
             <tbody>
               {items && items.map((item, index) =>
-                  <tr key={index} className="kvp-form__table__row">
+                  <tr key={index} className="kvp-form__table__row" data-testid="table-row">
                     <td className="text">{item.key}</td>
                     <td className="divider">|</td>
                     <td className="text">{item.value}</td>
                     <td className="buttons">
                       <div className="flex-vert">
-                        <a className="" onClick={() => this.moveUp(index)}>{index > 0 ? '△' : '\u00A0'}</a>
-                        <a className="" onClick={() => this.moveDown(index)}>
+                        <a className="" data-testid="move-up"
+                            onClick={() => this.moveUp(index)}>
+                          {index > 0 ? '△' : '\u00A0'}
+                        </a>
+                        <a className=""  data-testid="move-down"
+                            onClick={() => this.moveDown(index)}>
                           {index < items.length - 1 ? '▽' : '\u00A0'}
                         </a>
                       </div>
-                      <button className="cf-btn-secondary delete" onClick={() => this.deleteRow(item)}>X</button>
+                      <button className="cf-btn-secondary delete" data-testid="delete"
+                        onClick={() => this.deleteRow(item)}>X</button>
                     </td>
                   </tr>,
                 )}
-                <tr className="kvp-form__table__row form">
+                <tr className="kvp-form__table__row form" data-testid="form-row">
                   <td className="text">
-                  <input className="cf-form-input" type="text" id="key"
+                  <input className="cf-form-input" type="text" id="key" data-testid="key"
                     onChange={this.setKey} value={this.state.key}></input>
                   </td>
                   <td className="divider">
                   <span class="divider">|</span>
                   </td>
                   <td className="text">
-                  <input className="cf-form-input" type="text" id="value"
+                  <input className="cf-form-input" type="text" id="value" data-testid="value"
                     onChange={this.setVal} value={this.state.value}></input>
                   </td>
                   <td className="buttons">
-                  <button className="cf-btn-primary" type="submit" id="add" onClick={this.addRow}>+</button>
+                  <button className="cf-btn-primary" type="submit" id="add" data-testid="add"
+                    onClick={this.addRow}>+</button>
                   </td>
                 </tr>
             </tbody>
           </table>
 
           {this.state.errors && this.state.errors.map((e) =>
-            <div class="error">{e}</div>,
+            <div class="error" data-testid="error">{e}</div>,
           )}
         </div>
       </div>
   }
 
-  private setKey(evt: Event) {
+  private setKey: JSX.GenericEventHandler<HTMLInputElement> = (evt) => {
+    const newKey = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
     this.setState({
-      key: $(evt.target).val().toString(),
+      key: newKey,
     })
   }
-  private setVal(evt: Event) {
+  private setVal: JSX.GenericEventHandler<HTMLInputElement> = (evt) => {
+    const newVal = typeof evt == 'string' ? evt : (evt.target as HTMLInputElement).value
     this.setState({
-      value: $(evt.target).val().toString(),
+      value: newVal,
     })
   }
 
@@ -107,6 +116,7 @@ export class KVPForm extends Component<IProps, IState> {
   }
 
   private deleteRow(item: IPair) {
+    console.log('deleteRow')
     this.setState({
       key: item.key,
       value: item.value,

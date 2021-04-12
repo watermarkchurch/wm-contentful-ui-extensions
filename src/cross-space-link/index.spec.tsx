@@ -1,7 +1,7 @@
+import {fireEvent, render} from '@testing-library/preact'
 import {expect} from 'chai'
 import {} from 'mocha'
 import {h} from 'preact'
-import {shallow} from 'preact-render-spy'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
@@ -19,11 +19,11 @@ describe('<CrossSpaceLinkEditor />', () => {
     const client = stubClient()
 
     // act
-    const rendered = shallow(<CrossSpaceLinkEditor {...sdk as any} client={client} />)
+    const rendered = render(<CrossSpaceLinkEditor {...sdk as any} client={client} />)
 
     // assert
-    expect(rendered.find('.cf-form-input').exists()).to.be.true
-    expect(rendered.find<any, any>('.cf-form-input').attr('disabled')).to.be.true
+    const input = rendered.getByTestId('input')
+    expect(input.attributes.getNamedItem('disabled').value).to.eq('')
   })
 
   it('renders enabled after loading entries', async () => {
@@ -36,12 +36,12 @@ describe('<CrossSpaceLinkEditor />', () => {
     })
 
     // act
-    const rendered = shallow(<CrossSpaceLinkEditor {...sdk as any} client={client} />)
+    const rendered = render(<CrossSpaceLinkEditor {...sdk as any} client={client} />)
     await wait(1) // wait for componentDidMount
 
     // assert
-    expect(rendered.find('.cf-form-input').exists()).to.be.true
-    expect(rendered.find<any, any>('.cf-form-input').attr('disabled')).to.be.false
+    const input = rendered.getByTestId('input')
+    expect(input.attributes.getNamedItem('disabled')).to.be.null
   })
 
   it('displays possibilities that match', async () => {
@@ -55,17 +55,18 @@ describe('<CrossSpaceLinkEditor />', () => {
     })
 
     // act
-    const rendered = shallow(<CrossSpaceLinkEditor {...sdk as any} client={client} />)
+    const rendered = render(<CrossSpaceLinkEditor {...sdk as any} client={client} />)
     await wait(1) // wait for componentDidMount
-    rendered.find<any, any>('.cf-form-input').attr('onInput')({
+    const input = rendered.getByTestId('input')
+    fireEvent.input(input, {
       target: {
         value: 'meg',
       },
     })
-    rendered.rerender()
 
     // assert
-    expect(rendered.find('.possibilities').find('li').map((el) => el.text()))
+    const items = rendered.getAllByTestId('item')
+    expect(items.map((el) => el.textContent))
       .to.deep.equal(['Megan'])
   })
 })

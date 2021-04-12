@@ -1,6 +1,6 @@
 import {} from 'bootstrap'
 import {ContentfulClientApi} from 'contentful'
-import * as contentfulExtension from 'contentful-ui-extensions-sdk'
+import contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import {Component, h, render} from 'preact'
 

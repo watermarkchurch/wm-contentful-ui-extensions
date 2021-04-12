@@ -1,4 +1,4 @@
-import * as contentfulExtension from 'contentful-ui-extensions-sdk'
+import contentfulExtension from 'contentful-ui-extensions-sdk'
 import {EntryAPI, FieldExtensionSDK, Link, SpaceAPI, Sys} from 'contentful-ui-extensions-sdk'
 import {Component, h, render} from 'preact'
 

@@ -1,5 +1,5 @@
 import {} from 'bootstrap'
-import * as contentfulExtension from 'contentful-ui-extensions-sdk'
+import contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import JQuery from 'jquery'
 import debounce from 'lodash-es/debounce'
@@ -124,7 +124,7 @@ export class SectionPreview extends Component<FieldExtensionSDK, IAppState> {
       </div>
       <iframe src={clearUrl ? '' : this.renderUrl()}
         sandbox="allow-scripts"
-        onLoad={(evt) => this.onLoad(evt)}>
+        onLoad={this.onLoad}>
       </iframe>
     </div>
   }

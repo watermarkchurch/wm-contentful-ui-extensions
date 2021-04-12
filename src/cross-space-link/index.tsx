@@ -1,6 +1,6 @@
 import {} from 'bootstrap'
 import {ContentfulClientApi, createClient, Entry, EntryCollection, Field} from 'contentful'
-import * as contentfulExtension from 'contentful-ui-extensions-sdk'
+import contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import get from 'lodash-es/get'
 import has from 'lodash-es/has'
@@ -112,15 +112,17 @@ export class CrossSpaceLinkEditor extends Component<IProps, IAppState> {
             </pre>
           </div>}
         <div className="col-sm-6">
-          <input className="cf-form-input" disabled={initialized == false} value={value ? value.label : ''}
+          <input className="cf-form-input" data-testid="input"
+            disabled={initialized == false}
+            value={value ? value.label : ''}
             list="possibilities" autocomplete="on"
             onInput={this.onKeyDown} />
         </div>
         <div className="col-sm-6">
           <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
-          <ul className="possibilities">
+          <ul className="possibilities" data-testid="possibilities">
             {visiblePossibilities.map((v) =>
-              <li className="possibilities__item" onClick={this.selectPossibility(v)}>
+              <li className="possibilities__item" data-testid="item" onClick={this.selectPossibility(v)}>
                 {v.label}
               </li>,
             )}

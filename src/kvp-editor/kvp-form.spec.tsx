@@ -1,35 +1,28 @@
+import {fireEvent, render} from '@testing-library/preact'
 import {expect} from 'chai'
 import {} from 'mocha'
 import {h} from 'preact'
-import {shallow} from 'preact-render-spy'
 
+import { wait } from '../lib/utils'
 import {KVPForm} from './kvp-form'
 
 // tslint:disable:no-unused-expression
 
 describe('<kvp-form />', () => {
-  it('should mount', () => {
+  it('renders two inputs for entering a new kvp', async () => {
 
-    const rendered = shallow(<KVPForm />)
-
-    // assert
-    expect(rendered.find('.kvp-form__header')).to.exist
-  })
-
-  it('renders two inputs for entering a new kvp', () => {
-
-    const rendered = shallow(<KVPForm />)
+    const rendered = render(<KVPForm />)
 
     // assert
-    const inputs = rendered.find('.form').find('input')
-    expect(inputs.length).to.equal(2)
-    expect((inputs[0] as any).attributes.id).to.equal('key')
-    expect((inputs[1] as any).attributes.id).to.equal('value')
+    const key = await rendered.findByTestId('key')
+    expect(key.id).to.equal('key')
+    const value = await rendered.findByTestId('value')
+    expect(value.id).to.equal('value')
   })
 
-  it('renders a table for displaying the pairs', () => {
+  it('renders a table for displaying the pairs', async () => {
 
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
@@ -37,24 +30,26 @@ describe('<kvp-form />', () => {
       />)
 
     // assert
-    const rows = rendered.find('.kvp-form__table__row')
-    // 2 display rows + 1 form row
-    expect(rows.length).to.equal(3)
+    const rows = await rendered.findAllByTestId('table-row')
+    // 2 display rows
+    expect(rows.length).to.equal(2)
+    // 1 form row
+    expect(await rendered.findByTestId('form-row')).to.exist
   })
 
-  it('adds a new pair to the table on form submit', () => {
+  it('adds a new pair to the table on form submit', async () => {
 
     let pairs: Array<{key: string, value: string}> = []
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       onItemsChanged={(pair) => pairs = pair}
       />)
-    rendered.setState({
-      key: 'testkey',
-      value: 'testval',
-    })
+    const key = await rendered.findByTestId('key')
+    const value = await rendered.findByTestId('value')
+    fireEvent.change(key, { target: { value: 'testkey' }})
+    fireEvent.change(value, { target: { value: 'testval' }})
 
     // act
-    rendered.find('#add').simulate('click')
+    fireEvent.click(await rendered.findByTestId('add'))
 
     // assert
     expect(pairs).to.have.length(1)
@@ -64,28 +59,24 @@ describe('<kvp-form />', () => {
     })
   })
 
-  it('validates presence of key and value', () => {
+  it('validates presence of key and value', async () => {
 
     let pairs: Array<{key: string, value: string}> = []
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       onItemsChanged={(pair) => pairs = pair}
       />)
-    rendered.setState({
-      key: '',
-      value: null,
-    })
 
     // act
-    rendered.find('#add').simulate('click')
+    fireEvent.click(await rendered.findByTestId('add'))
 
     // assert
     expect(pairs).to.have.length(0)
-    expect(rendered.find('.error')).to.have.length(2)
+    expect(await rendered.findAllByTestId('error')).to.have.length(2)
   })
 
-  it('deletes a pair from the table on clicking the X button', () => {
+  it('deletes a pair from the table on clicking the X button', async () => {
     let pairs: Array<{key: string, value: string}> = []
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
@@ -94,8 +85,8 @@ describe('<kvp-form />', () => {
       />)
 
     // act
-    const button = rendered.find('.delete').first()
-    button.simulate('click')
+    const button = (await rendered.findAllByTestId('delete'))[0]
+    fireEvent.click(button)
 
     // assert
     expect(pairs).to.have.length(1)
@@ -104,9 +95,9 @@ describe('<kvp-form />', () => {
     })
   })
 
-  it('puts the deleted KVP into the inputs', () => {
+  it('puts the deleted KVP into the inputs', async () => {
     let pairs: Array<{key: string, value: string}> = []
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
@@ -115,17 +106,18 @@ describe('<kvp-form />', () => {
       />)
 
     // act
-    const button = rendered.find('.delete').first()
-    button.simulate('click')
+    const button = (await rendered.findAllByTestId('delete'))[0]
+    fireEvent.click(button)
+    await wait(10)
 
     // assert
-    expect(rendered.state().key).to.equal('key1')
-    expect(rendered.state().value).to.equal('val1')
+    expect(rendered.getByDisplayValue('key1').id).to.eq('key')
+    expect(rendered.getByDisplayValue('val1').id).to.eq('value')
   })
 
-  it('reorders on moveUp', () => {
+  it('reorders on moveUp', async () => {
     let pairs: Array<{key: string, value: string}> = []
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
@@ -134,9 +126,8 @@ describe('<kvp-form />', () => {
       />)
 
     // act
-    const button = rendered.find('.kvp-form__table__row').at(1)
-      .find('.flex-vert').children().first()
-    button.simulate('click')
+    const button = (await rendered.findAllByTestId('move-up'))[1]
+    fireEvent.click(button)
 
     // assert
     expect(pairs).to.deep.equal([
@@ -145,9 +136,9 @@ describe('<kvp-form />', () => {
     ])
   })
 
-  it('reorders on moveDown', () => {
+  it('reorders on moveDown', async () => {
     let pairs: Array<{key: string, value: string}> = []
-    const rendered = shallow(<KVPForm
+    const rendered = render(<KVPForm
       items={[
         { key: 'key1', value: 'val1' },
         { key: 'key2', value: 'val2' },
@@ -156,9 +147,8 @@ describe('<kvp-form />', () => {
       />)
 
     // act
-    const button = rendered.find('.kvp-form__table__row').first()
-      .find('.flex-vert').children().last()
-    button.simulate('click')
+    const button = (await rendered.findAllByTestId('move-down'))[0]
+    fireEvent.click(button)
 
     // assert
     expect(pairs).to.deep.equal([

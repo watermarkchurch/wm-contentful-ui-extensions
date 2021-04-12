@@ -1,7 +1,7 @@
+import {fireEvent, render} from '@testing-library/preact'
 import {expect} from 'chai'
 import {} from 'mocha'
 import {h} from 'preact'
-import {shallow} from 'preact-render-spy'
 
 import {SlugForm} from './slug-form'
 
@@ -11,39 +11,40 @@ describe('<SlugForm />', () => {
 
   it('renders parent slug', () => {
 
-    const rendered = shallow(<SlugForm
+    const rendered = render(<SlugForm
       parentSlug={'parent'}
       slug={'test'}
       />)
 
     // assert
-    const parent = rendered.find('#parent')
-    expect(parent.text()).to.equal('parent/')
+    const parent = rendered.getByTestId('parent')
+    expect(parent.textContent).to.equal('parent/')
   })
 
   it('renders slug as editable', () => {
 
-    const rendered = shallow(<SlugForm
+    const rendered = render(<SlugForm
       parentSlug={'parent'}
       slug={'test'}
       />)
 
     // assert
-    const slug = rendered.find<any, any>('#slug')
-    expect(slug.text()).to.equal('test')
-    expect(slug.attrs().contentEditable).to.be.true
+    const slug = rendered.getByTestId('slug')
+    expect(slug.textContent).to.equal('test')
+    expect(slug.attributes.getNamedItem('contentEditable').value).to.equal('true')
   })
 
   it('calls onChange on blur', () => {
     const events = [] as any[]
-    const rendered = shallow(<SlugForm
+    const rendered = render(<SlugForm
       parentSlug={'parent'}
       slug={'test'}
       onChange={(evt) => events.push(evt)}
       />)
 
     // act
-    rendered.find('#slug').simulate('blur', {
+    const slug = rendered.getByTestId('slug')
+    fireEvent.blur(slug, {
       target: { textContent: 'newValue' },
     })
 

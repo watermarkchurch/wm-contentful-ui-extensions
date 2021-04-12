@@ -1,6 +1,6 @@
 import {} from 'bootstrap'
 import {ContentfulClientApi, createClient, Entry, EntryCollection, Field} from 'contentful'
-import * as contentfulExtension from 'contentful-ui-extensions-sdk'
+import contentfulExtension from 'contentful-ui-extensions-sdk'
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk'
 import QRCode from 'easyqrcodejs'
 import get from 'lodash-es/get'
@@ -99,7 +99,9 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
             </pre>
           </div>}
         <div className="col-12">
-          <input className="cf-form-input" disabled={initialized == false} value={value ? value.value : ''}
+          <input className="cf-form-input" data-testid="input"
+            disabled={initialized == false}
+            value={value ? value.value : ''}
             onInput={this.onKeyDown} />
         </div>
         <div className="col-12" ref={this.qrcode}>
