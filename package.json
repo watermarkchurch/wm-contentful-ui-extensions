@@ -1,6 +1,6 @@
 {
   "name": "wm-contentful-ui-extensions",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Watermark's library of Contentful UI extensions",
   "main": "index.js",
   "scripts": {
@@ -49,9 +49,9 @@
     "css-loader": "^3.2.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
-    "html-webpack-plugin": "^3.2.0",
     "html-webpack-inline-source-plugin": "0.0.10",
     "html-webpack-inline-svg-plugin": "^1.2.4",
+    "html-webpack-plugin": "^3.2.0",
     "karma": "^4.4.1",
     "karma-chai": "^0.1.0",
     "karma-chai-jquery": "^1.0.0",
