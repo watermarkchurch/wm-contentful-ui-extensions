@@ -58,16 +58,16 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   public render() {
-    const { error, scoreHistory, dice } = this.state
+    const { error, dice } = this.state
 
     const dieProps = {
       dieSize: 120,
       disableIndividual: true,
-      dotColor: '#1dff00',
-      faceColor: '#ff00ac',
+      dotColor: '#DBDAD6',
+      faceColor: '#EF5E24',
       margin: 15,
       outline: false,
-      outlineColor: '#000000',
+      outlineColor: '#373D42',
       rollTime: 2,
       sides: 6,
     }
