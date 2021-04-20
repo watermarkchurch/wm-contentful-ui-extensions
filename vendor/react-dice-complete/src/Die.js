@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'preact'
 import { PropTypes } from 'prop-types'
 
 class Die extends Component {
