@@ -27,6 +27,15 @@ class Die extends Component {
     }, this.props.rollTime * 1000)
   }
 
+  onClick = (...args) => {
+    if (!this.props.disableIndividual) {
+      this.rollDie()
+    }
+    if (this.props.onClick) {
+      this.props.onClick(...args)
+    }
+  }
+
   getValue() {
     return this.state.currentValue
   }
@@ -109,7 +118,7 @@ class Die extends Component {
     return (
       <div
         className='die-container'
-        onClick={this.props.disableIndividual ? null : () => this.rollDie()}
+        onClick={this.onClick}
         style={containerStyle}
       >
         <div
