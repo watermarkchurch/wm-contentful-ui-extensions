@@ -54,6 +54,16 @@ body,
   }
 }
 
+.btn.btn-danger {
+  background-color: #EF5E24;
+  border-color: #EF5E24;
+
+  &:hover {
+    background-color: #f06e39;
+    border-color: #f06e39;
+  }
+}
+
 .loader {
   height: 4px;
   width: 100%;

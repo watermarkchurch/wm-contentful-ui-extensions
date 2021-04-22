@@ -158,17 +158,17 @@ export class Farkle extends Component<IProps, IAppState> {
         </div>
         <div class="col-6">
           {rolling &&
-            <button class="btn btn-outline" disabled>Rolling...</button>}
+            <button class="btn" disabled>Rolling...</button>}
 
           {!rolling && !didFarkle && thisRollScore !== undefined &&
             showKeep &&
               <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep!</button>}
 
           {!rolling && !didFarkle && thisRollScore !== undefined && !didRollThrough &&
-              <button class="btn btn-info" onClick={() => this.nextTurn()}>Stay!</button>}
+              <button class="btn btn-outline-info" onClick={() => this.nextTurn()}>Stay!</button>}
 
           {!rolling && !didFarkle && thisRollMax === undefined &&
-              <button class="btn btn-primary" onClick={() => this.roll()}>Roll!</button>
+              <button class="btn btn-danger" onClick={() => this.roll()}>Roll!</button>
             }
           {!rolling && !didFarkle && didRollThrough &&
               <button class="btn btn-primary" onClick={() => this.rollThrough()}>Roll Through!</button>
