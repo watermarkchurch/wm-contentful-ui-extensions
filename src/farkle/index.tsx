@@ -71,11 +71,11 @@ export class Farkle extends Component<IProps, IAppState> {
     } = this.state
 
     const dieProps = {
-      dieSize: 120,
+      dieSize: 105,
       disableIndividual: true,
       dotColor: '#DBDAD6',
       faceColor: '#EF5E24',
-      margin: 15,
+      margin: 12,
       outline: false,
       outlineColor: '#373D42',
       rollTime: 0,
@@ -136,7 +136,7 @@ export class Farkle extends Component<IProps, IAppState> {
             return <Die {...dieProps}
               dieSize={30}
               rollTime={0}
-              margin={5}
+              margin={4}
               key={[turnIndex, d.index].join('/')}
               defaultRoll={d.value}
               ></Die>
