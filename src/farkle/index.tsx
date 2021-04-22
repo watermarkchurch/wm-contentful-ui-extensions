@@ -35,14 +35,14 @@ interface IAppState {
 interface IProps {
 }
 
-const InitialDice = () => [
+const InitialDice = () => JSON.parse(JSON.stringify([
   {index: 0},
   {index: 1},
   {index: 2},
   {index: 3},
   {index: 4},
   {index: 5},
-]
+]))
 
 export class Farkle extends Component<IProps, IAppState> {
   private readonly errorHandler = new AsyncErrorHandler(this)
@@ -61,7 +61,7 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   public render() {
-    const { error, dice, keptDice, rolling, didFarkle, thisRollScore, keptScore, priorScores } = this.state
+    const { error, dice, keptDice, rolling, didFarkle, thisRollScore, thisRollMax, keptScore, priorScores } = this.state
 
     const dieProps = {
       dieSize: 120,
@@ -100,7 +100,7 @@ export class Farkle extends Component<IProps, IAppState> {
                 faceColor: '#DBDAD6',
                 dotColor: '#FFFFFF',
               })}
-              key={d.index}
+              key={d.index.toString()}
               ref={(die: any) => (this.dice[d.index] = die)}
               onClick={() => this.togglePendingKeep(d)}
               rollDone={() => this.rollDone(d)}></Die>
@@ -113,7 +113,7 @@ export class Farkle extends Component<IProps, IAppState> {
               dieSize={30}
               rollTime={0}
               margin={5}
-              key={d.index}
+              key={d.index.toString()}
               defaultRoll={d.value}
               ref={(die: any) => (this.dice[d.index] = die)}
               ></Die>
@@ -143,7 +143,7 @@ export class Farkle extends Component<IProps, IAppState> {
           {!rolling && !didFarkle && thisRollScore !== undefined &&
               <button class="btn btn-info" onClick={() => this.nextTurn()}>Stay!</button>}
 
-          {!rolling && !didFarkle && (thisRollScore === undefined || !remainingDice.find((d) => d.pendingKeep)) &&
+          {!rolling && !didFarkle && thisRollMax === undefined &&
               <button class="btn btn-primary" onClick={() => this.roll()}>Roll!</button>
             }
 
@@ -187,6 +187,7 @@ export class Farkle extends Component<IProps, IAppState> {
       keptDice: [...keptDice, ...newKeptDice],
       keptScore: (this.state.keptScore || 0) + this.state.thisRollScore.total,
       thisRollScore: undefined,
+      thisRollMax: undefined,
     })
   }
 
@@ -290,6 +291,7 @@ export class Farkle extends Component<IProps, IAppState> {
       keptDice: [],
       didFarkle: undefined,
       thisRollScore: undefined,
+      thisRollMax: undefined,
       keptScore: undefined,
       rolling: undefined,
     })
