@@ -28,6 +28,7 @@ interface IAppState {
   thisRollScore?: IScore
   keptScore?: number
   didFarkle?: boolean
+  didRollThrough?: boolean
 
   turnIndex: number
   priorScores: number[]
@@ -66,7 +67,8 @@ export class Farkle extends Component<IProps, IAppState> {
 
   public render() {
     const {
-      error, dice, keptDice, rolling, didFarkle, thisRollScore, thisRollMax,
+      error, dice, keptDice, rolling, didFarkle, didRollThrough,
+      thisRollScore, thisRollMax,
       keptScore, turnIndex, priorScores,
     } = this.state
 
@@ -89,8 +91,6 @@ export class Farkle extends Component<IProps, IAppState> {
     const canKeep =
       scoreRoll(dice.filter((d) => d.pendingKeep).map((d) => d.value)).nonScoringDice.length == 0
 
-    console.log('dice', dice)
-
     return <div id="wrapper">
     <div className={`farkle container ${error ? 'error' : ''}`}>
       <div className="row dice-row">
@@ -104,6 +104,10 @@ export class Farkle extends Component<IProps, IAppState> {
           {didFarkle &&
             <div className="didFarkleWrapper">
               <h1>Farkle!</h1>
+            </div>}
+          {didRollThrough &&
+            <div className="didFarkleWrapper">
+              <h1>Roll Through!</h1>
             </div>}
           {dice.map((d) => {
             if (d.kept) {
@@ -149,7 +153,7 @@ export class Farkle extends Component<IProps, IAppState> {
           <br/>
           <h3 class="badge badge-text">
             {(thisRollScore && thisRollScore.total || 0) + (keptScore || 0)} total&nbsp;
-            {thisRollScore !== undefined && 'if you stay'}
+            {thisRollScore !== undefined && !didRollThrough && 'if you stay'}
           </h3>
         </div>
         <div class="col-6">
@@ -160,11 +164,14 @@ export class Farkle extends Component<IProps, IAppState> {
             showKeep &&
               <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep!</button>}
 
-          {!rolling && !didFarkle && thisRollScore !== undefined &&
+          {!rolling && !didFarkle && thisRollScore !== undefined && !didRollThrough &&
               <button class="btn btn-info" onClick={() => this.nextTurn()}>Stay!</button>}
 
           {!rolling && !didFarkle && thisRollMax === undefined &&
               <button class="btn btn-primary" onClick={() => this.roll()}>Roll!</button>
+            }
+          {!rolling && !didFarkle && didRollThrough &&
+              <button class="btn btn-primary" onClick={() => this.rollThrough()}>Roll Through!</button>
             }
 
           {!rolling && didFarkle &&
@@ -212,9 +219,9 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   private togglePendingKeep(die: IDieState) {
-    const {dice, thisRollMax} = this.state
+    const {dice, thisRollMax, didRollThrough} = this.state
 
-    if (!thisRollMax) { return }
+    if (!thisRollMax || didRollThrough) { return }
 
     if (dice[die.index].pendingKeep) {
       // we can always untoggle it
@@ -260,8 +267,25 @@ export class Farkle extends Component<IProps, IAppState> {
     })
   }
 
+  private rollThrough() {
+    this.setState({
+      turnIndex: this.state.turnIndex + 1,
+      keptScore: (this.state.keptScore || 0) + this.state.thisRollScore.total,
+      dice: InitialDice(),
+      keptDice: [],
+      didFarkle: undefined,
+      didRollThrough: undefined,
+      thisRollScore: undefined,
+      thisRollMax: undefined,
+      rolling: undefined,
+    })
+    setTimeout(() =>
+      this.roll(),
+      400)
+
+  }
+
   private rollDone(die: IDieState) {
-    console.log('rollDone', die)
     const state = this.state.dice
     if (!state[die.index].rolling) {
       // This die wasn't rolling - this may have been a "fake roll" executed on mount
@@ -296,6 +320,7 @@ export class Farkle extends Component<IProps, IAppState> {
     this.setState({
       thisRollMax,
       thisRollScore,
+      didRollThrough: thisRollMax.nonScoringDice.length == 0,
     })
   }
 
@@ -307,13 +332,13 @@ export class Farkle extends Component<IProps, IAppState> {
       priorScores = [thisTurnScore, ...priorScores]
     }
 
-    console.log('nextTurn!')
     this.setState({
       turnIndex: turnIndex + 1,
       dice: InitialDice(),
       keptDice: [],
       priorScores,
       didFarkle: undefined,
+      didRollThrough: undefined,
       thisRollScore: undefined,
       thisRollMax: undefined,
       keptScore: undefined,
