@@ -36,12 +36,12 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.(t|j)sx?$/,
         use: 'babel-loader',
         exclude: /node_modules/
       },
       {
-        test: /\.scss$/,
+        test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader, 
           { loader: "css-loader" },
@@ -52,6 +52,12 @@ module.exports = {
   },
 
   resolve: {
+    "alias": { 
+      "react": "preact/compat",
+      "react-dom/test-utils": "preact/test-utils",
+      "react-dom": "preact/compat",
+     // Must be below test-utils
+    },
     extensions: ['.tsx', '.ts', '.jsx', '.js', '.scss']
   },
 

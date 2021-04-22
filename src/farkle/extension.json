@@ -1,0 +1,10 @@
+{
+  "id": "farkle",
+  "name": "Rolls dice and keeps score",
+  "src": "https://github.com/watermarkchurch/wm-contentful-ui-extensions/",
+  "fieldTypes": [
+    "Symbol"
+  ],
+  "parameters": {
+  }
+}
