@@ -78,6 +78,12 @@ export class Farkle extends Component<IProps, IAppState> {
 
     const remainingDice = dice.filter((d) => !d.kept)
 
+    // Disable the keep button if the selected dice to keep would include any non-scoring dice
+    // This can happen if you get a 3 of a kind and only select 1 or 2 of them
+    const showKeep = remainingDice.find((d) => d.pendingKeep)
+    const canKeep =
+      scoreRoll(dice.filter((d) => d.pendingKeep).map((d) => d.value)).nonScoringDice.length == 0
+
     return <div id="wrapper">
     <div className={`farkle container ${error ? 'error' : ''}`}>
       <div className="row dice-row">
@@ -112,6 +118,8 @@ export class Farkle extends Component<IProps, IAppState> {
               ref={(die: any) => (this.dice[d.index] = die)}
               ></Die>
           })}
+          {showKeep && !canKeep &&
+            <span>You must either select all the dice in a set or none of them</span>}
         </div>
       </div>
       <div class="row controls-row">
@@ -129,8 +137,8 @@ export class Farkle extends Component<IProps, IAppState> {
             <button class="btn btn-outline" disabled>Rolling...</button>}
 
           {!rolling && !didFarkle && thisRollScore !== undefined &&
-            (remainingDice.find((d) => d.pendingKeep) &&
-              <button class="btn btn-info" onClick={() => this.keep()}>Keep!</button>)}
+            showKeep &&
+              <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep!</button>}
 
           {!rolling && !didFarkle && thisRollScore !== undefined &&
               <button class="btn btn-info" onClick={() => this.nextTurn()}>Stay!</button>}
