@@ -10,8 +10,8 @@ export function scoreRoll(dice: number[]): IScore {
   const remainingDice = [...dice].sort()
   const scoringDice: number[] = []
 
-  if (isEqual([1, 2, 3, 4, 5, 6], dice)) {
-    return { total: 1500, scoringDice: dice, nonScoringDice: [] }
+  if (isEqual([1, 2, 3, 4, 5, 6], remainingDice)) {
+    return { total: 1500, scoringDice: remainingDice, nonScoringDice: [] }
   }
 
   let subtotal = 0
