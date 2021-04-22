@@ -13,8 +13,6 @@ interface IDieState {
   value?: number,
   kept?: boolean
   pendingKeep?: boolean
-
-  rolling?: boolean
 }
 
 interface IAppState {
@@ -80,8 +78,7 @@ export class Farkle extends Component<IProps, IAppState> {
       margin: 15,
       outline: false,
       outlineColor: '#373D42',
-      // rolling === undefined if we haven't rolled yet
-      rollTime: rolling === undefined ? 0 : 2,
+      rollTime: 0,
       sides: 6,
     }
 
@@ -128,7 +125,9 @@ export class Farkle extends Component<IProps, IAppState> {
               key={[turnIndex, d.index].join('/')}
               ref={(die: any) => (this.dice[d.index] = die)}
               onClick={() => this.togglePendingKeep(d)}
-              rollDone={() => this.rollDone(d)}></Die>
+              // rolling === undefined if we haven't rolled yet
+              rollTime={rolling === undefined ? 0 : randomBetween(0.8, 2.0)}
+              rollDone={() => {return}}></Die>
           })}
         </div>
         <div className="col-12 d-flex justify-content-center dice">
@@ -255,7 +254,6 @@ export class Farkle extends Component<IProps, IAppState> {
     })
 
     dice.filter((d) => !d.kept).forEach((die, i) => {
-      die.rolling = true
       const dieRef = this.dice[die.index]
       const roll = dieRef.getRandomInt()
       dieRef.rollDie(roll)
@@ -265,6 +263,9 @@ export class Farkle extends Component<IProps, IAppState> {
     this.setState({
       dice,
     })
+    setTimeout(() =>
+      this.rollDone(),
+      2000)
   }
 
   private rollThrough() {
@@ -285,22 +286,10 @@ export class Farkle extends Component<IProps, IAppState> {
 
   }
 
-  private rollDone(die: IDieState) {
-    const state = this.state.dice
-    if (!state[die.index].rolling) {
-      // This die wasn't rolling - this may have been a "fake roll" executed on mount
-      return
-    }
-
-    state[die.index].rolling = false
-    this.setState({
-      dice: state,
-    })
-    if (!state.find((d) => d.rolling)) {
-      // all done rolling
-      this.setState({ rolling: false })
-      this.updateScore()
-    }
+  private rollDone() {
+    // all done rolling
+    this.setState({ rolling: false })
+    this.updateScore()
   }
 
   private updateScore() {
@@ -354,3 +343,7 @@ $(document).ready(() => {
   render(<Farkle />,
     document.getElementById('react-root')!)
 })
+
+function randomBetween(min: number, max: number) {
+  return Math.random() * (max - min) + min
+}
