@@ -2,6 +2,38 @@
   display: none;
 }
 
+html,
+body,
+#react-root,
+#wrapper {
+  height: 100%;
+}
+
+.farkle {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dice-row {
+  margin-bottom: auto;
+}
+
+.controls-row {
+  padding: 20px;
+
+  .btn {
+    width: 100%;
+    margin: 8px;
+  }
+
+  .scores {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+}
+
 .loader {
   height: 4px;
   width: 100%;

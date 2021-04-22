@@ -26,12 +26,22 @@ interface IAppState {
   rolling?: boolean
   thisRollScore?: number
   keptScore?: number
+  didFarkle?: boolean
 
   priorScores: number[]
 }
 
 interface IProps {
 }
+
+const InitialDice = () => [
+  {index: 0},
+  {index: 1},
+  {index: 2},
+  {index: 3},
+  {index: 4},
+  {index: 5},
+]
 
 export class Farkle extends Component<IProps, IAppState> {
   private readonly errorHandler = new AsyncErrorHandler(this)
@@ -42,29 +52,15 @@ export class Farkle extends Component<IProps, IAppState> {
   constructor(props: IProps, context?: any) {
     super(props, context)
 
-    const dice = [
-      {index: 0},
-      {index: 1},
-      {index: 2},
-      {index: 3},
-      {index: 4},
-      {index: 5},
-    ]
-    console.log('dice', dice)
     this.state = {
-      dice,
+      dice: InitialDice(),
       keptDice: [],
       priorScores: [],
     }
-    this.componentDidMount = this.errorHandler.wrap(this, this.componentDidMount)
-  }
-
-  public async componentDidMount() {
-    this.roll()
   }
 
   public render() {
-    const { error, dice, keptDice, rolling, thisRollScore, keptScore, priorScores } = this.state
+    const { error, dice, keptDice, rolling, didFarkle, thisRollScore, keptScore, priorScores } = this.state
 
     const dieProps = {
       dieSize: 120,
@@ -74,14 +70,16 @@ export class Farkle extends Component<IProps, IAppState> {
       margin: 15,
       outline: false,
       outlineColor: '#373D42',
-      rollTime: 2,
+      // rolling === undefined if we haven't rolled yet
+      rollTime: rolling === undefined ? 0 : 2,
       sides: 6,
     }
 
     const remainingDice = dice.filter((d) => !d.kept)
 
-    return <div className={`farkle container-fluid ${error ? 'error' : ''}`}>
-      <div className="row">
+    return <div id="wrapper">
+    <div className={`farkle container ${error ? 'error' : ''}`}>
+      <div className="row dice-row">
         {error && <div>
             <h1>Error!</h1>
             <pre>
@@ -114,48 +112,57 @@ export class Farkle extends Component<IProps, IAppState> {
               ></Die>
           })}
         </div>
-        <hr />
-        <div class="col-6">
+      </div>
+      <div class="row controls-row">
+        <div class="col-6 scores">
           {thisRollScore !== undefined &&
-            <span class="badge badge-success">{thisRollScore} points</span>}
+            <h3 class="badge badge-success">{thisRollScore} points</h3>}
           <br/>
-          <span class="badge badge-text">
+          <h3 class="badge badge-text">
             {(thisRollScore || 0) + (keptScore || 0)} total&nbsp;
-            {thisRollScore !== undefined && 'if you keep'}
-          </span>
-          <hr/>
-          <table>
-            <thead>
-              <th>
-                <td>Previous Turns</td>
-              </th>
-            </thead>
-            <tbody>
-              {priorScores.map((score) => {
-                return <tr>
-                  <td>{score}</td>
-                </tr>
-              })}
-            </tbody>
-          </table>
+            {thisRollScore !== undefined && 'if you stay'}
+          </h3>
         </div>
         <div class="col-6">
           {rolling &&
             <button class="btn btn-outline" disabled>Rolling...</button>}
 
-          {!rolling && thisRollScore !== undefined &&
+          {!rolling && !didFarkle && thisRollScore !== undefined &&
             (remainingDice.find((d) => d.pendingKeep) &&
               <button class="btn btn-info" onClick={() => this.keep()}>Keep!</button>)}
 
-          {!rolling && thisRollScore !== undefined &&
-              <button class="btn btn-info">Stay!</button>}
+          {!rolling && !didFarkle && thisRollScore !== undefined &&
+              <button class="btn btn-info" onClick={() => this.nextTurn()}>Stay!</button>}
 
-          {!rolling && (thisRollScore === undefined || !remainingDice.find((d) => d.pendingKeep)) &&
+          {!rolling && !didFarkle && (thisRollScore === undefined || !remainingDice.find((d) => d.pendingKeep)) &&
               <button class="btn btn-primary" onClick={() => this.roll()}>Roll!</button>
             }
+
+          {!rolling && didFarkle &&
+            <button class="btn btn-info" onClick={() => this.nextTurn()}>Next Turn!</button>}
         </div>
       </div>
     </div>
+    <div className="container">
+      <div className="col-12">
+        <hr/>
+        <table>
+          <thead>
+            <th>
+              <td>Previous Turns</td>
+            </th>
+          </thead>
+          <tbody>
+            {priorScores.map((score) => {
+              return <tr>
+                <td>{score}</td>
+              </tr>
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
   }
 
   private keep() {
@@ -214,7 +221,6 @@ export class Farkle extends Component<IProps, IAppState> {
       dice: state,
     })
     if (!state.find((d) => d.rolling)) {
-      console.log('all done rolling!')
       // all done rolling
       this.setState({ rolling: false })
       this.updateScore()
@@ -223,11 +229,37 @@ export class Farkle extends Component<IProps, IAppState> {
 
   private updateScore() {
     const remainingDice = this.state.dice.filter((d) => !d.kept)
+    const didFarkle = scoreRoll(remainingDice.map((d) => d.value)) == 0
+    if (didFarkle) {
+      this.setState({
+        didFarkle: true,
+      })
+    }
+
     const pendingKeepDice = remainingDice.filter((d) => d.pendingKeep)
 
     const diceToScore = pendingKeepDice.length > 0 ? pendingKeepDice : remainingDice
     this.setState({
       thisRollScore: scoreRoll(diceToScore.map((d) => d.value)),
+    })
+  }
+
+  private nextTurn() {
+    const {didFarkle, priorScores, thisRollScore, keptScore} = this.state
+    if (!didFarkle) {
+      const thisTurnScore = (thisRollScore || 0) + (keptScore || 0)
+      this.setState({
+        priorScores: [thisTurnScore, ...priorScores],
+      })
+    }
+
+    this.setState({
+      dice: InitialDice(),
+      keptDice: [],
+      didFarkle: undefined,
+      thisRollScore: undefined,
+      keptScore: undefined,
+      rolling: undefined,
     })
   }
 }
