@@ -35,7 +35,7 @@ interface IAppState {
   }
 
   turnIndex: number
-  priorScores: number[]
+  priorScores: string[]
 }
 
 interface IProps {
@@ -150,15 +150,15 @@ export class Farkle extends Component<IProps, IAppState> {
         </div>
       </div>
       <div class="row controls-row">
-        {showKeep && !canKeep &&
-          <span>You must either select all the dice in a set or none of them</span>}
+        {/* {showKeep && !canKeep &&
+          <span>You must either select all the dice in a set or none of them</span>} */}
         <div class="col-6 scores">
           {thisRollScore !== undefined &&
             <h3 class="badge badge-success">{thisRollScore.total} points</h3>}
           <br/>
           <h3 class="badge badge-text">
-            {(thisRollScore && thisRollScore.total || 0) + (keptScore || 0)} total&nbsp;
-            {thisRollScore !== undefined && !didRollThrough && 'if you stay'}
+            {(thisRollMax && thisRollMax.total || 0) + (keptScore || 0)} total&nbsp;
+            {thisRollMax !== undefined && !didRollThrough && 'if you stay'}
           </h3>
         </div>
         <div class="col-6">
@@ -348,11 +348,13 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   private nextTurn() {
-    const {didFarkle, thisRollScore, keptScore, turnIndex} = this.state
+    const {didFarkle, thisRollMax, keptScore, turnIndex} = this.state
     let priorScores = this.state.priorScores
     if (!didFarkle) {
-      const thisTurnScore = (thisRollScore && thisRollScore.total || 0) + (keptScore || 0)
-      priorScores = [thisTurnScore, ...priorScores]
+      const thisTurnScore = (thisRollMax && thisRollMax.total || 0) + (keptScore || 0)
+      priorScores = [thisTurnScore.toString(), ...priorScores]
+    } else {
+      priorScores = ['farkle! (0 points)', ...priorScores]
     }
 
     this.setState({
