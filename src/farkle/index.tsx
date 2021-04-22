@@ -29,20 +29,23 @@ interface IAppState {
   keptScore?: number
   didFarkle?: boolean
 
+  turnIndex: number
   priorScores: number[]
 }
 
 interface IProps {
 }
 
-const InitialDice = () => JSON.parse(JSON.stringify([
-  {index: 0},
-  {index: 1},
-  {index: 2},
-  {index: 3},
-  {index: 4},
-  {index: 5},
-]))
+const InitialDice = () => {
+  return JSON.parse(JSON.stringify([
+    {index: 0},
+    {index: 1},
+    {index: 2},
+    {index: 3},
+    {index: 4},
+    {index: 5},
+  ]))
+}
 
 export class Farkle extends Component<IProps, IAppState> {
   private readonly errorHandler = new AsyncErrorHandler(this)
@@ -57,11 +60,15 @@ export class Farkle extends Component<IProps, IAppState> {
       dice: InitialDice(),
       keptDice: [],
       priorScores: [],
+      turnIndex: 1,
     }
   }
 
   public render() {
-    const { error, dice, keptDice, rolling, didFarkle, thisRollScore, thisRollMax, keptScore, priorScores } = this.state
+    const {
+      error, dice, keptDice, rolling, didFarkle, thisRollScore, thisRollMax,
+      keptScore, turnIndex, priorScores,
+    } = this.state
 
     const dieProps = {
       dieSize: 120,
@@ -76,13 +83,13 @@ export class Farkle extends Component<IProps, IAppState> {
       sides: 6,
     }
 
-    const remainingDice = dice.filter((d) => !d.kept)
-
     // Disable the keep button if the selected dice to keep would include any non-scoring dice
     // This can happen if you get a 3 of a kind and only select 1 or 2 of them
-    const showKeep = remainingDice.find((d) => d.pendingKeep)
+    const showKeep = dice.filter((d) => !d.kept).find((d) => d.pendingKeep)
     const canKeep =
       scoreRoll(dice.filter((d) => d.pendingKeep).map((d) => d.value)).nonScoringDice.length == 0
+
+    console.log('dice', dice)
 
     return <div id="wrapper">
     <div className={`farkle container ${error ? 'error' : ''}`}>
@@ -94,13 +101,27 @@ export class Farkle extends Component<IProps, IAppState> {
             </pre>
           </div>}
         <div className="col-12 d-flex justify-content-center dice" ref={this.diceRef}>
-          {remainingDice.map((d) => {
+          {didFarkle &&
+            <div className="didFarkleWrapper">
+              <h1>Farkle!</h1>
+            </div>}
+          {dice.map((d) => {
+            if (d.kept) {
+              return <Die {...dieProps}
+                    key={[turnIndex, d.index].join('/')}
+                    outline={true}
+                    outlineColor="#DBDAD6"
+                    faceColor="#FFFFFF"
+                    dotColor="#DBDAD6"
+                    ref={(die: any) => (this.dice[d.index] = die)}
+                    />
+            }
             return <Die {...dieProps}
-              {...(d.pendingKeep && {
+              {...((d.pendingKeep || didFarkle) && {
                 faceColor: '#DBDAD6',
                 dotColor: '#FFFFFF',
               })}
-              key={d.index.toString()}
+              key={[turnIndex, d.index].join('/')}
               ref={(die: any) => (this.dice[d.index] = die)}
               onClick={() => this.togglePendingKeep(d)}
               rollDone={() => this.rollDone(d)}></Die>
@@ -113,9 +134,8 @@ export class Farkle extends Component<IProps, IAppState> {
               dieSize={30}
               rollTime={0}
               margin={5}
-              key={d.index.toString()}
+              key={[turnIndex, d.index].join('/')}
               defaultRoll={d.value}
-              ref={(die: any) => (this.dice[d.index] = die)}
               ></Die>
           })}
           {showKeep && !canKeep &&
@@ -125,7 +145,7 @@ export class Farkle extends Component<IProps, IAppState> {
       <div class="row controls-row">
         <div class="col-6 scores">
           {thisRollScore !== undefined &&
-            <h3 class="badge badge-success">{thisRollScore} points</h3>}
+            <h3 class="badge badge-success">{thisRollScore.total} points</h3>}
           <br/>
           <h3 class="badge badge-text">
             {(thisRollScore && thisRollScore.total || 0) + (keptScore || 0)} total&nbsp;
@@ -221,31 +241,33 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   private roll() {
-    const state = this.state.dice
+    const {dice} = this.state
     this.setState({
       rolling: true,
       thisRollScore: undefined,
     })
 
-    this.dice.forEach((d, i) => {
-      if (!d || !state[i] || state[i].kept) {
-        // skip this one
-        return
-      }
-
-      state[i].rolling = true
-      const roll = d.getRandomInt()
-      d.rollDie(roll)
-      state[i].value = roll
+    dice.filter((d) => !d.kept).forEach((die, i) => {
+      die.rolling = true
+      const dieRef = this.dice[die.index]
+      const roll = dieRef.getRandomInt()
+      dieRef.rollDie(roll)
+      die.value = roll
     })
 
     this.setState({
-      dice: state,
+      dice,
     })
   }
 
   private rollDone(die: IDieState) {
+    console.log('rollDone', die)
     const state = this.state.dice
+    if (!state[die.index].rolling) {
+      // This die wasn't rolling - this may have been a "fake roll" executed on mount
+      return
+    }
+
     state[die.index].rolling = false
     this.setState({
       dice: state,
@@ -278,17 +300,19 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   private nextTurn() {
-    const {didFarkle, priorScores, thisRollScore, keptScore} = this.state
+    const {didFarkle, thisRollScore, keptScore, turnIndex} = this.state
+    let priorScores = this.state.priorScores
     if (!didFarkle) {
       const thisTurnScore = (thisRollScore && thisRollScore.total || 0) + (keptScore || 0)
-      this.setState({
-        priorScores: [thisTurnScore, ...priorScores],
-      })
+      priorScores = [thisTurnScore, ...priorScores]
     }
 
+    console.log('nextTurn!')
     this.setState({
+      turnIndex: turnIndex + 1,
       dice: InitialDice(),
       keptDice: [],
+      priorScores,
       didFarkle: undefined,
       thisRollScore: undefined,
       thisRollMax: undefined,
