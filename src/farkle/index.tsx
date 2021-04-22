@@ -5,7 +5,7 @@ import Die from '../../vendor/react-dice-complete/src/Die'
 import '../../vendor/react-dice-complete/src/styles.scss'
 import { AsyncErrorHandler } from '../lib/async-error-handler'
 import { injectBootstrap } from '../lib/utils'
-import { scoreRoll } from './scoring'
+import { IScore, scoreRoll } from './scoring'
 import './style.scss'
 
 interface IDieState {
@@ -24,7 +24,8 @@ interface IAppState {
   keptDice: number[]
 
   rolling?: boolean
-  thisRollScore?: number
+  thisRollMax?: IScore
+  thisRollScore?: IScore
   keptScore?: number
   didFarkle?: boolean
 
@@ -119,7 +120,7 @@ export class Farkle extends Component<IProps, IAppState> {
             <h3 class="badge badge-success">{thisRollScore} points</h3>}
           <br/>
           <h3 class="badge badge-text">
-            {(thisRollScore || 0) + (keptScore || 0)} total&nbsp;
+            {(thisRollScore && thisRollScore.total || 0) + (keptScore || 0)} total&nbsp;
             {thisRollScore !== undefined && 'if you stay'}
           </h3>
         </div>
@@ -176,16 +177,36 @@ export class Farkle extends Component<IProps, IAppState> {
     this.setState({
       dice,
       keptDice: [...keptDice, ...newKeptDice],
-      keptScore: (this.state.keptScore || 0) + this.state.thisRollScore,
+      keptScore: (this.state.keptScore || 0) + this.state.thisRollScore.total,
       thisRollScore: undefined,
     })
   }
 
-  private togglePendingKeep(d: IDieState) {
-    const s = this.state.dice
-    s[d.index].pendingKeep = !s[d.index].pendingKeep
+  private togglePendingKeep(die: IDieState) {
+    const {dice, thisRollMax} = this.state
+
+    if (!thisRollMax) { return }
+
+    if (dice[die.index].pendingKeep) {
+      // we can always untoggle it
+      dice[die.index].pendingKeep = false
+    } else {
+      // can we keep this die or not?  It must be a scoring die
+      const availableScoringDice = [...thisRollMax.scoringDice]
+      for (const d of dice) {
+        if (d.pendingKeep) {
+          // we're already keeping this "1" or "5" (or one of our 3 "4"s etc)
+          availableScoringDice.splice(availableScoringDice.indexOf(d.value), 1)
+        }
+      }
+      if (availableScoringDice.indexOf(die.value) != -1) {
+        // Yes, this one is not one of the available scoring dice.
+        dice[die.index].pendingKeep = true
+      }
+    }
+
     this.setState({
-      dice: s,
+      dice,
     })
     this.updateScore()
   }
@@ -229,7 +250,8 @@ export class Farkle extends Component<IProps, IAppState> {
 
   private updateScore() {
     const remainingDice = this.state.dice.filter((d) => !d.kept)
-    const didFarkle = scoreRoll(remainingDice.map((d) => d.value)) == 0
+    const thisRollMax = scoreRoll(remainingDice.map((d) => d.value))
+    const didFarkle = thisRollMax.scoringDice.length == 0
     if (didFarkle) {
       this.setState({
         didFarkle: true,
@@ -239,15 +261,17 @@ export class Farkle extends Component<IProps, IAppState> {
     const pendingKeepDice = remainingDice.filter((d) => d.pendingKeep)
 
     const diceToScore = pendingKeepDice.length > 0 ? pendingKeepDice : remainingDice
+    const thisRollScore = scoreRoll(diceToScore.map((d) => d.value))
     this.setState({
-      thisRollScore: scoreRoll(diceToScore.map((d) => d.value)),
+      thisRollMax,
+      thisRollScore,
     })
   }
 
   private nextTurn() {
     const {didFarkle, priorScores, thisRollScore, keptScore} = this.state
     if (!didFarkle) {
-      const thisTurnScore = (thisRollScore || 0) + (keptScore || 0)
+      const thisTurnScore = (thisRollScore && thisRollScore.total || 0) + (keptScore || 0)
       this.setState({
         priorScores: [thisTurnScore, ...priorScores],
       })
