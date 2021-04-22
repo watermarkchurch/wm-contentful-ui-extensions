@@ -7,7 +7,14 @@ body,
 #react-root,
 #wrapper {
   height: 100%;
+
+
+  .col-10,
+  .col-1 {
+    padding: 0;
+  }
 }
+
 
 .farkle {
   height: 100%;
@@ -32,6 +39,11 @@ body,
     animation: fadein 1s;
     color: #542A44;
   }
+}
+
+.kept-dice {
+  flex-direction: column;
+  margin-top: 8px
 }
 
 @keyframes fadein {

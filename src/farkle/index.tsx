@@ -28,6 +28,12 @@ interface IAppState {
   didFarkle?: boolean
   didRollThrough?: boolean
 
+  undoKeep?: {
+    previousKeptScore: number,
+    newKeptDice: number[]
+    previousKeptDice: number[],
+  }
+
   turnIndex: number
   priorScores: number[]
 }
@@ -65,7 +71,7 @@ export class Farkle extends Component<IProps, IAppState> {
 
   public render() {
     const {
-      error, dice, keptDice, rolling, didFarkle, didRollThrough,
+      error, dice, keptDice, rolling, didFarkle, didRollThrough, undoKeep,
       thisRollScore, thisRollMax,
       keptScore, turnIndex, priorScores,
     } = this.state
@@ -97,7 +103,7 @@ export class Farkle extends Component<IProps, IAppState> {
               {error.message}
             </pre>
           </div>}
-        <div className="col-12 d-flex justify-content-center dice" ref={this.diceRef}>
+        <div className="col-10 d-flex justify-content-center dice" ref={this.diceRef}>
           {didFarkle &&
             <div className="didFarkleWrapper">
               <h1>Farkle!</h1>
@@ -130,7 +136,7 @@ export class Farkle extends Component<IProps, IAppState> {
               rollDone={() => {return}}></Die>
           })}
         </div>
-        <div className="col-12 d-flex justify-content-center dice">
+        <div className="col-1 d-flex justify-content-center kept-dice">
           {keptDice.map((idx) => {
             const d = dice[idx]
             return <Die {...dieProps}
@@ -141,11 +147,11 @@ export class Farkle extends Component<IProps, IAppState> {
               defaultRoll={d.value}
               ></Die>
           })}
-          {showKeep && !canKeep &&
-            <span>You must either select all the dice in a set or none of them</span>}
         </div>
       </div>
       <div class="row controls-row">
+        {showKeep && !canKeep &&
+          <span>You must either select all the dice in a set or none of them</span>}
         <div class="col-6 scores">
           {thisRollScore !== undefined &&
             <h3 class="badge badge-success">{thisRollScore.total} points</h3>}
@@ -162,6 +168,9 @@ export class Farkle extends Component<IProps, IAppState> {
           {!rolling && !didFarkle && thisRollScore !== undefined &&
             showKeep &&
               <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep!</button>}
+          
+          {!rolling && undoKeep &&
+              <button class="btn btn-outline-info" disabled={!canKeep} onClick={() => this.undoKeep()}>Undo</button>}
 
           {!rolling && !didFarkle && thisRollScore !== undefined && !didRollThrough &&
               <button class="btn btn-outline-info" onClick={() => this.nextTurn()}>Stay!</button>}
@@ -214,7 +223,30 @@ export class Farkle extends Component<IProps, IAppState> {
       keptScore: (this.state.keptScore || 0) + this.state.thisRollScore.total,
       thisRollScore: undefined,
       thisRollMax: undefined,
+      undoKeep: {
+        previousKeptDice: keptDice,
+        newKeptDice,
+        previousKeptScore: this.state.keptScore || 0,
+      },
     })
+  }
+
+  private undoKeep() {
+    if (!this.state.undoKeep) { return }
+    const {dice} = this.state
+    const {previousKeptDice, newKeptDice, previousKeptScore} = this.state.undoKeep
+    newKeptDice.forEach((index) => {
+      dice[index].pendingKeep = true
+      dice[index].kept = false
+    })
+
+    this.setState({
+      dice,
+      keptDice: previousKeptDice,
+      keptScore: previousKeptScore,
+      undoKeep: undefined,
+    })
+    this.updateScore()
   }
 
   private togglePendingKeep(die: IDieState) {
@@ -251,6 +283,7 @@ export class Farkle extends Component<IProps, IAppState> {
     this.setState({
       rolling: true,
       thisRollScore: undefined,
+      undoKeep: undefined,
     })
 
     dice.filter((d) => !d.kept).forEach((die, i) => {
@@ -279,6 +312,7 @@ export class Farkle extends Component<IProps, IAppState> {
       thisRollScore: undefined,
       thisRollMax: undefined,
       rolling: undefined,
+      undoKeep: undefined,
     })
     setTimeout(() =>
       this.roll(),
@@ -332,6 +366,7 @@ export class Farkle extends Component<IProps, IAppState> {
       thisRollMax: undefined,
       keptScore: undefined,
       rolling: undefined,
+      undoKeep: undefined,
     })
   }
 }
