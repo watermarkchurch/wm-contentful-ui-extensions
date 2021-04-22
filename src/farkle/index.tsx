@@ -21,6 +21,7 @@ interface IAppState {
   error?: any | null
 
   dice: IDieState[]
+  keptDice: number[]
 
   rolling?: boolean
   thisRollScore?: number
@@ -52,6 +53,7 @@ export class Farkle extends Component<IProps, IAppState> {
     console.log('dice', dice)
     this.state = {
       dice,
+      keptDice: [],
       priorScores: [],
     }
     this.componentDidMount = this.errorHandler.wrap(this, this.componentDidMount)
@@ -62,7 +64,7 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   public render() {
-    const { error, dice, rolling, thisRollScore, keptScore, priorScores } = this.state
+    const { error, dice, keptDice, rolling, thisRollScore, keptScore, priorScores } = this.state
 
     const dieProps = {
       dieSize: 120,
@@ -76,7 +78,6 @@ export class Farkle extends Component<IProps, IAppState> {
       sides: 6,
     }
 
-    const keptDice = dice.filter((d) => d.kept)
     const remainingDice = dice.filter((d) => !d.kept)
 
     return <div className={`farkle container-fluid ${error ? 'error' : ''}`}>
@@ -96,12 +97,13 @@ export class Farkle extends Component<IProps, IAppState> {
               })}
               key={d.index}
               ref={(die: any) => (this.dice[d.index] = die)}
-              onClick={() => this.setKept(d)}
+              onClick={() => this.togglePendingKeep(d)}
               rollDone={() => this.rollDone(d)}></Die>
           })}
         </div>
         <div className="col-12 d-flex justify-content-center dice">
-          {keptDice.map((d) => {
+          {keptDice.map((idx) => {
+            const d = dice[idx]
             return <Die {...dieProps}
               dieSize={30}
               rollTime={0}
@@ -157,18 +159,22 @@ export class Farkle extends Component<IProps, IAppState> {
   }
 
   private keep() {
-    const state = this.state.dice
-    state.filter((d) => d.pendingKeep).forEach((d) => {
-      state[d.index].kept = true
+    const {dice, keptDice} = this.state
+    const newKeptDice: number[] = []
+    dice.filter((d) => d.pendingKeep).forEach((d) => {
+      dice[d.index].pendingKeep = false
+      dice[d.index].kept = true
+      newKeptDice.push(d.index)
     })
     this.setState({
-      dice: state,
+      dice,
+      keptDice: [...keptDice, ...newKeptDice],
       keptScore: (this.state.keptScore || 0) + this.state.thisRollScore,
       thisRollScore: undefined,
     })
   }
 
-  private setKept(d: IDieState) {
+  private togglePendingKeep(d: IDieState) {
     const s = this.state.dice
     s[d.index].pendingKeep = !s[d.index].pendingKeep
     this.setState({
