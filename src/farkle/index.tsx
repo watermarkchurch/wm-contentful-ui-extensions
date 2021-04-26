@@ -97,6 +97,8 @@ export class Farkle extends Component<IProps, IAppState> {
       anyPendingKeep &&
       scoreRoll(dice.filter((d) => d.pendingKeep).map((d) => d.value)).nonScoringDice.length == 0
 
+    const bankableTotal = (thisRollMax && thisRollMax.total || 0) + (keptScore || 0)
+
     return <div id="wrapper">
     <div className={`farkle container ${error ? 'error' : ''}`}>
       <div className="row dice-row">
@@ -151,11 +153,10 @@ export class Farkle extends Component<IProps, IAppState> {
               ></Die>
           })}
         </div>
-        <div className="col-12">
+        <div className="col-12 hints">
           {didRoll && !anyPendingKeep && !didRollThrough && !didFarkle &&
             <span className="hint">
-              Tap any scoring dice you wish to keep, then click "Keep dice".<br/>
-              Or, you can end your turn and put your points in the bank.
+              Tap any scoring dice you wish to keep, then click "Keep dice".
             </span>}
           {didRoll && anyPendingKeep && !canKeep &&
             <span className="hint">You must keep all dice in a set of 3</span>}
@@ -178,8 +179,8 @@ export class Farkle extends Component<IProps, IAppState> {
             <h3 class="badge badge-success">{thisRollScore.total} points</h3>}
           <br/>
           <h3 class="badge badge-text">
-            {(thisRollMax && thisRollMax.total || 0) + (keptScore || 0)} total&nbsp;
-            {thisRollMax !== undefined && !didRollThrough && 'if you end now'}
+            {bankableTotal} total&nbsp;
+            {thisRollMax !== undefined && !didRollThrough && 'if you stop'}
           </h3>
         </div>
         <div class="col-6">
