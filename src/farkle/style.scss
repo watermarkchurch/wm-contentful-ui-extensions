@@ -82,9 +82,13 @@ body,
 
 .controls-row {
   padding: 0 20px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   height: 84px;
   margin-top: auto;
+
+  .farkle & {
+    margin-bottom: 50px;
+  }
 
   .btn {
     width: 100%;
