@@ -103,15 +103,15 @@ export class Farkle extends Component<IProps, IAppState> {
               {error.message}
             </pre>
           </div>}
+        {didFarkle &&
+          <div className="didFarkleWrapper">
+            <h1>Farkle!</h1>
+          </div>}
+        {didRollThrough &&
+          <div className="didFarkleWrapper">
+            <h1>Roll Through!</h1>
+          </div>}
         <div className="col-10 d-flex justify-content-center dice" ref={this.diceRef}>
-          {didFarkle &&
-            <div className="didFarkleWrapper">
-              <h1>Farkle!</h1>
-            </div>}
-          {didRollThrough &&
-            <div className="didFarkleWrapper">
-              <h1>Roll Through!</h1>
-            </div>}
           {dice.map((d) => {
             if (d.kept) {
               return <Die {...dieProps}
