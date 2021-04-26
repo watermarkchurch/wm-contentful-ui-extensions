@@ -206,29 +206,36 @@ export class Farkle extends Component<IProps, IAppState> {
           {!rolling && didFarkle &&
             <button class="btn btn-info" onClick={() => this.nextTurn()}>Play Again</button>}
           {!rolling && !didRoll && !undoKeep &&
-            <span class="badge clickable" onClick={() => $([document.documentElement, document.body]).animate({
-              scrollTop: $('#scores').offset().top,
-          }, 600)}>↓ See scores ↓</span>}
+            <span class="badge clickable" onClick={() => animateToTop($('#scores'))}>↓ See scores ↓</span>}
         </div>
       </div>
     </div>
+    <hr className="w-100" />
     <div className="container" id="scores">
-      <div className="col-12">
-        <hr/>
-        <table>
-          <thead>
-            <th>
-              <td>Previous Turns</td>
-            </th>
-          </thead>
-          <tbody>
-            {priorScores.map((score) => {
-              return <tr>
-                <td>{score}</td>
-              </tr>
-            })}
-          </tbody>
-        </table>
+      <div className="row">
+        <div className="col-12 scores-table">
+          <table>
+            <thead>
+              <th>
+                <td>Previous Turns</td>
+              </th>
+            </thead>
+            <tbody>
+              {priorScores.map((score) => {
+                return <tr>
+                  <td>{score}</td>
+                </tr>
+              })}
+              {priorScores.length == 0 &&
+                <tr><td>Nothing yet...</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="row controls-row">
+        <div className="col-12">
+          <span class="badge clickable" onClick={() => animateToTop($('#wrapper'))}>↑ Back to game ↑</span>
+        </div>
       </div>
     </div>
   </div>
@@ -408,4 +415,10 @@ $(document).ready(() => {
 
 function randomBetween(min: number, max: number) {
   return Math.random() * (max - min) + min
+}
+
+function animateToTop($elem: any) {
+  $([document.documentElement, document.body]).animate({
+    scrollTop: $elem.offset().top,
+  }, 400)
 }

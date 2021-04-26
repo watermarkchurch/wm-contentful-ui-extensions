@@ -13,20 +13,18 @@ body,
   .col-1 {
     padding: 0;
   }
+}
 
-  .container {
-    height: 100vh;
-  }
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .clickable {
   cursor: pointer;
 }
 
-.farkle {
-  display: flex;
-  flex-direction: column;
-}
 
 .dice {
   // https://stackoverflow.com/a/18272742/2192243
@@ -83,8 +81,10 @@ body,
 }
 
 .controls-row {
-  padding: 20px;
+  padding: 0 20px;
   margin-bottom: 32px;
+  height: 84px;
+  margin-top: auto;
 
   .btn {
     width: 100%;
