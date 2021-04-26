@@ -88,10 +88,13 @@ export class Farkle extends Component<IProps, IAppState> {
       sides: 6,
     }
 
+    const didRoll = !rolling && thisRollMax !== undefined
+
     // Disable the keep button if the selected dice to keep would include any non-scoring dice
     // This can happen if you get a 3 of a kind and only select 1 or 2 of them
-    const showKeep = dice.filter((d) => !d.kept).find((d) => d.pendingKeep)
+    const anyPendingKeep = dice.filter((d) => !d.kept).find((d) => d.pendingKeep)
     const canKeep =
+      anyPendingKeep &&
       scoreRoll(dice.filter((d) => d.pendingKeep).map((d) => d.value)).nonScoringDice.length == 0
 
     return <div id="wrapper">
@@ -109,7 +112,7 @@ export class Farkle extends Component<IProps, IAppState> {
           </div>}
         {didRollThrough &&
           <div className="didFarkleWrapper">
-            <h1>Roll Through!</h1>
+            <h1>Free Roll!</h1>
           </div>}
         <div className="col-10 d-flex justify-content-center dice" ref={this.diceRef}>
           {dice.map((d) => {
@@ -148,42 +151,59 @@ export class Farkle extends Component<IProps, IAppState> {
               ></Die>
           })}
         </div>
+        <div className="col-12">
+          {didRoll && !anyPendingKeep && !didRollThrough && !didFarkle &&
+            <span className="hint">
+              Tap any scoring dice you wish to keep, then click "Keep dice".<br/>
+              Or, you can end your turn and put your points in the bank.
+            </span>}
+          {didRoll && anyPendingKeep && !canKeep &&
+            <span className="hint">You must keep all dice in a set of 3</span>}
+          {didRoll && anyPendingKeep && canKeep &&
+            <span className="hint">
+              Keep the selected dice and roll again, or end your turn and put your points in the bank.
+            </span>}
+          {!rolling && undoKeep &&
+            <span className="hint">You can change your selection by first touching "Change Dice"</span>}
+
+          {didRoll && didFarkle &&
+            <span className="hint">None of your dice scored!  You lose this turn.</span>}
+          {didRoll && didRollThrough &&
+            <span className="hint">All your dice scored!  You must roll at least one more time.</span>}
+        </div>
       </div>
       <div class="row controls-row">
-        {/* {showKeep && !canKeep &&
-          <span>You must either select all the dice in a set or none of them</span>} */}
         <div class="col-6 scores">
           {thisRollScore !== undefined &&
             <h3 class="badge badge-success">{thisRollScore.total} points</h3>}
           <br/>
           <h3 class="badge badge-text">
             {(thisRollMax && thisRollMax.total || 0) + (keptScore || 0)} total&nbsp;
-            {thisRollMax !== undefined && !didRollThrough && 'if you stay'}
+            {thisRollMax !== undefined && !didRollThrough && 'if you end now'}
           </h3>
         </div>
         <div class="col-6">
           {rolling &&
             <button class="btn" disabled>Rolling...</button>}
 
-          {!rolling && !didFarkle && thisRollScore !== undefined &&
-            showKeep &&
-              <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep!</button>}
+          {didRoll && !didFarkle && !didRollThrough &&
+              <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep Dice</button>}
           
           {!rolling && undoKeep &&
-              <button class="btn btn-outline-info" disabled={!canKeep} onClick={() => this.undoKeep()}>Undo</button>}
+              <button class="btn btn-outline-info" onClick={() => this.undoKeep()}>Change Dice</button>}
 
-          {!rolling && !didFarkle && thisRollScore !== undefined && !didRollThrough &&
-              <button class="btn btn-outline-info" onClick={() => this.nextTurn()}>Stay!</button>}
+          {didRoll && !didFarkle && !didRollThrough &&
+              <button class="btn btn-outline-info" onClick={() => this.nextTurn()}>End Turn</button>}
 
-          {!rolling && !didFarkle && thisRollMax === undefined &&
+          {!rolling && !didRoll &&
               <button class="btn btn-danger" onClick={() => this.roll()}>Roll!</button>
             }
           {!rolling && !didFarkle && didRollThrough &&
-              <button class="btn btn-primary" onClick={() => this.rollThrough()}>Roll Through!</button>
+              <button class="btn btn-primary" onClick={() => this.rollThrough()}>Free Roll!</button>
             }
 
           {!rolling && didFarkle &&
-            <button class="btn btn-info" onClick={() => this.nextTurn()}>Next Turn!</button>}
+            <button class="btn btn-info" onClick={() => this.nextTurn()}>Play Again</button>}
         </div>
       </div>
     </div>
@@ -350,11 +370,11 @@ export class Farkle extends Component<IProps, IAppState> {
   private nextTurn() {
     const {didFarkle, thisRollMax, keptScore, turnIndex} = this.state
     let priorScores = this.state.priorScores
+    const thisTurnScore = (thisRollMax && thisRollMax.total || 0) + (keptScore || 0)
     if (!didFarkle) {
-      const thisTurnScore = (thisRollMax && thisRollMax.total || 0) + (keptScore || 0)
       priorScores = [thisTurnScore.toString(), ...priorScores]
     } else {
-      priorScores = ['farkle! (0 points)', ...priorScores]
+      priorScores = [`farkle! (${thisTurnScore} points lost)`, ...priorScores]
     }
 
     this.setState({
