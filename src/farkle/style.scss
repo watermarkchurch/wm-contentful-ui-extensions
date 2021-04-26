@@ -13,11 +13,17 @@ body,
   .col-1 {
     padding: 0;
   }
+
+  .container {
+    height: 100vh;
+  }
 }
 
+.clickable {
+  cursor: pointer;
+}
 
 .farkle {
-  height: 100%;
   display: flex;
   flex-direction: column;
 }

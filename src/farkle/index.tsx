@@ -165,7 +165,7 @@ export class Farkle extends Component<IProps, IAppState> {
               Keep the selected dice and roll again, or end your turn and put your points in the bank.
             </span>}
           {!rolling && undoKeep &&
-            <span className="hint">You can change your selection by first touching "Change Dice"</span>}
+            <span className="hint">You can change your selection by first touching "Undo"</span>}
 
           {didRoll && didFarkle &&
             <span className="hint">None of your dice scored!  You lose this turn.</span>}
@@ -191,7 +191,7 @@ export class Farkle extends Component<IProps, IAppState> {
               <button class="btn btn-info" disabled={!canKeep} onClick={() => this.keep()}>Keep Dice</button>}
           
           {!rolling && undoKeep &&
-              <button class="btn btn-outline-info" onClick={() => this.undoKeep()}>Change Dice</button>}
+              <button class="btn btn-outline-info" onClick={() => this.undoKeep()}>Undo</button>}
 
           {didRoll && !didFarkle && !didRollThrough &&
               <button class="btn btn-outline-info" onClick={() => this.nextTurn()}>End Turn</button>}
@@ -205,10 +205,14 @@ export class Farkle extends Component<IProps, IAppState> {
 
           {!rolling && didFarkle &&
             <button class="btn btn-info" onClick={() => this.nextTurn()}>Play Again</button>}
+          {!rolling && !didRoll && !undoKeep &&
+            <span class="badge clickable" onClick={() => $([document.documentElement, document.body]).animate({
+              scrollTop: $('#scores').offset().top,
+          }, 600)}>↓ See scores ↓</span>}
         </div>
       </div>
     </div>
-    <div className="container">
+    <div className="container" id="scores">
       <div className="col-12">
         <hr/>
         <table>
