@@ -31,6 +31,11 @@ body,
   z-index: -1;
 }
 
+.hint {
+  color: #542A44;
+  animation: fadeindelay 5s;
+}
+
 .didFarkleWrapper {
   position: absolute;
   left: 0;
@@ -58,6 +63,12 @@ body,
 @keyframes fadein {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+@keyframes fadeindelay {
+  0%    { opacity: 0; }
+  80%    { opacity: 0; }
+  100%   { opacity: 1; }
 }
 
 .controls-row {
