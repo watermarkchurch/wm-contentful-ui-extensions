@@ -37,3 +37,16 @@
   to {left: 100%;}
 }
 
+.qrcode-container {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  width: 252px;
+  height: 252px;
+}
+
+.image-select-card-deck {
+  
+  .card.selected {
+    border-color: green;
+  }
+}

@@ -9,6 +9,8 @@ import {Component, createRef, h, JSX, RefObject, render} from 'preact'
 
 import { AsyncErrorHandler } from '../lib/async-error-handler'
 import { injectBootstrap } from '../lib/utils'
+import { ImageSelect } from './image-select'
+
 const template = require('es6-dynamic-template')
 
 declare function require(module: string): any
@@ -21,6 +23,8 @@ interface IAppState {
   wait?: boolean,
   error?: any | null
   initialized: boolean
+
+  logo?: string
 }
 
 interface IInstallationParams {
@@ -79,7 +83,7 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
   }
 
   public render() {
-    const { value, wait: loading, initialized, error } = this.state
+    const { value, wait: loading, logo, initialized, error } = this.state
 
     return <div className={`qr-code-generator container-fluid ${error ? 'error' : ''}`}>
       <div className="row">
@@ -95,8 +99,24 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
             value={value ? value.value : ''}
             onInput={this.onKeyDown} />
         </div>
-        <div className="col-12" ref={this.qrcode}>
-          <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
+        <div className="col-12 col-md-6">
+          <div className="qrcode-container" ref={this.qrcode}>
+            <div className="loader" style={{visibility: loading ? 'visible' : 'hidden'}} />
+          </div>
+          {this.state.value &&
+            <a href="#" onClick={(e) => {
+              e.preventDefault()
+              download('qrcode.svg', $('.qrcode-container').html())
+            }}>Download as SVG</a>}
+        </div>
+        <div className="col-12 col-md-6">
+          <h4>Choose Image</h4>
+          <ImageSelect selected={logo} onSelected={(l) => {
+            this.setState({logo: l || null})
+            setTimeout(() => {
+              this.update(this.state.value)
+            })
+          }} />
         </div>
       </div>
     </div>
@@ -139,10 +159,12 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
 
     this.code = new QRCode(this.qrcode.current, {
       text: newValue,
-      logo: 'https://watermarkchurch.github.io/wm-contentful-ui-extensions/images/logo-blue.svg',
-      logoWidth: 64,
-      logoHeight: 64,
-      drawer: 'canvas',
+      logo: this.state.logo,
+      ...(this.state.logo && {
+        logoWidth: 64,
+        logoHeight: 64,
+      }),
+      drawer: 'svg',
     })
   }
 }
@@ -172,3 +194,16 @@ $(document).ready(() => {
   render(<QRCodeGenerator />,
     document.getElementById('react-root')!)
 })
+
+function download(filename: string, text: string) {
+  let element = document.createElement('a')
+  element.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text))
+  element.setAttribute('download', filename)
+
+  element.style.display = 'none'
+  document.body.appendChild(element)
+
+  element.click()
+
+  document.body.removeChild(element)
+}
