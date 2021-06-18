@@ -25,7 +25,8 @@
     "es6-dynamic-template": "^1.0.5",
     "lodash-es": "^4.17.11",
     "preact": "^10.5.13",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "react-colorful": "^5.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

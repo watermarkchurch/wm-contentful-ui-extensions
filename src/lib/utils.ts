@@ -67,3 +67,25 @@ export function injectBootstrap() {
   injectScript('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js',
     'sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM')
 }
+
+// https://davidwalsh.name/javascript-debounce-function
+// tslint:disable
+export function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    wait: number,
+    immediate?: boolean,
+): (...args: Parameters<T>) => void {
+  let timeout
+  return function() {
+    let context = this, args = arguments
+    let later = function() {
+      timeout = null
+      if (!immediate) { func.apply(context, args) }
+    }
+    let callNow = immediate && !timeout
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+    if (callNow) { func.apply(context, args) }
+  }
+};
+// tslint:enable

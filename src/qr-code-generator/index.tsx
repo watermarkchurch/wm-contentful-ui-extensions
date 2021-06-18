@@ -6,9 +6,10 @@ import QRCode from 'easyqrcodejs'
 import get from 'lodash-es/get'
 import has from 'lodash-es/has'
 import {Component, createRef, h, JSX, RefObject, render} from 'preact'
+import { HexColorPicker } from 'react-colorful'
 
 import { AsyncErrorHandler } from '../lib/async-error-handler'
-import { injectBootstrap } from '../lib/utils'
+import { debounce, injectBootstrap } from '../lib/utils'
 import { ImageSelect } from './image-select'
 
 const template = require('es6-dynamic-template')
@@ -25,6 +26,7 @@ interface IAppState {
   initialized: boolean
 
   logo?: string
+  color: string
 }
 
 interface IInstallationParams {
@@ -53,6 +55,7 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
       wait: false,
       error: null,
       initialized: false,
+      color: '#000000',
     }
 
     this.qrcode = createRef()
@@ -118,11 +121,23 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
             })
           }} />
         </div>
+        <div className="col-12 col-md-6 offset-md-6">
+          <h4>Color</h4>
+          <HexColorPicker color={this.state.color} onChange={(newColor) => {
+            this.setState({ color: newColor })
+            setTimeout(() => {
+              this.update(this.state.value)
+            })
+          }} />;
+        </div>
       </div>
     </div>
   }
 
-  private update = async (value: IEntryValue | null) => {
+  // This is a function not a member, it just happens to confuse tslint
+  // due to the debounce wrapper
+  // tslint:disable-next-line: member-ordering
+  private update = debounce(async (value: IEntryValue | null) => {
     const sdk = this.props
 
     if (sdk && sdk.field) {
@@ -132,7 +147,7 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
       this.onValueChanged(value ? value.value : null)
     }
     this.validate(value)
-  }
+  }, 40)
 
   private validate = (value: IEntryValue | null) => {
     const sdk = this.props
@@ -160,6 +175,7 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
     this.code = new QRCode(this.qrcode.current, {
       text: newValue,
       logo: this.state.logo,
+      colorDark: this.state.color,
       ...(this.state.logo && {
         logoWidth: 64,
         logoHeight: 64,
