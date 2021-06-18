@@ -116,19 +116,21 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
           <h4>Choose Image</h4>
           <ImageSelect selected={logo} onSelected={(l) => {
             this.setState({logo: l || null})
-            setTimeout(() => {
-              this.update(this.state.value)
-            })
+            this.update(this.state.value)
           }} />
         </div>
         <div className="col-12 col-md-6 offset-md-6">
           <h4>Color</h4>
+          <input type="text"
+            value={this.state.color}
+            onChange={(e) => {
+              this.setState({ color: e.target.value })
+              this.update(this.state.value)
+            }} />
           <HexColorPicker color={this.state.color} onChange={(newColor) => {
             this.setState({ color: newColor })
-            setTimeout(() => {
-              this.update(this.state.value)
-            })
-          }} />;
+            this.update(this.state.value)
+          }} />
         </div>
       </div>
     </div>
