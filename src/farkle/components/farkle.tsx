@@ -1,10 +1,8 @@
 import type {} from 'bootstrap'
 import {Component, createRef, h} from 'preact'
-import Die from '../../vendor/react-dice-complete/src/Die'
+import Die from '../../../vendor/react-dice-complete/src/Die'
 
-import '../../vendor/react-dice-complete/src/styles.scss'
-import { IScore, scoreRoll } from './scoring'
-import './style.scss'
+import { IScore, scoreRoll } from './farkle/scoring'
 
 interface IDieState {
   index: number

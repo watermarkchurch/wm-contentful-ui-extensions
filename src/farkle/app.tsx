@@ -1,10 +1,13 @@
 import {FunctionComponent, h} from 'preact'
-import { Farkle } from './farkle'
+import Navigation from './navigation'
 import Providers from './providers'
 
-const App: FunctionComponent = ({children}) => {
+import '../../vendor/react-dice-complete/src/styles.scss'
+import './style.scss'
+
+const App: FunctionComponent = ({}) => {
   return <Providers>
-    <Farkle />
+    <Navigation />
   </Providers>
 }
 export default App

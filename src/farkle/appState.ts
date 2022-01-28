@@ -2,7 +2,9 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import isEqual from 'lodash/isEqual'
 import { useDispatch, useSelector } from 'react-redux'
 
-const rootReducer = combineReducers({})
+const rootReducer = combineReducers({
+  default: (s) => (s || {}),
+})
 
 const store = configureStore({
   reducer: rootReducer,
