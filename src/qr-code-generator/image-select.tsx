@@ -60,7 +60,7 @@ export class ImageSelect extends Component<IProps, IState> {
       </div>
   }
 
-  private handleUploadImage = (evt) => {
+  private handleUploadImage = (evt: any) => {
     let reader = new FileReader()
     let file = evt.target.files[0]
 
