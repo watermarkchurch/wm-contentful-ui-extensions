@@ -4,7 +4,6 @@ import {} from 'mocha'
 import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
-import { stubClient, stubSdk } from '../lib/spec-helpers'
 import {scoreRoll} from './scoring'
 
 // tslint:disable: no-unused-expression

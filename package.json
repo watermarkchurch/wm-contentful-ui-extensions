@@ -19,14 +19,18 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@reduxjs/toolkit": "^1.7.1",
     "contentful": "^7.5.1",
     "contentful-ui-extensions-sdk": "^3.3.0",
     "easyqrcodejs": "^4.3.4",
     "es6-dynamic-template": "^1.0.5",
+    "history": "^5.2.0",
     "lodash-es": "^4.17.11",
-    "preact": "^10.5.13",
+    "preact": "^10.6.5",
+    "preact-router": "^4.0.1",
     "prop-types": "^15.7.2",
-    "react-colorful": "^5.2.2"
+    "react-colorful": "^5.2.2",
+    "react-redux": "^7.2.6"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

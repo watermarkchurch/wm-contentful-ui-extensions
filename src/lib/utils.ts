@@ -75,7 +75,7 @@ export function debounce<T extends (...args: any[]) => any>(
     wait: number,
     immediate?: boolean,
 ): (...args: Parameters<T>) => void {
-  let timeout
+  let timeout: any
   return function() {
     let context = this, args = arguments
     let later = function() {

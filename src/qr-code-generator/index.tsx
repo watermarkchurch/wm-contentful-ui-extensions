@@ -123,7 +123,7 @@ export class QRCodeGenerator extends Component<IProps, IAppState> {
           <h4>Color</h4>
           <input type="text"
             value={this.state.color}
-            onChange={(e) => {
+            onChange={(e: any) => {
               this.setState({ color: e.target.value })
               this.update(this.state.value)
             }} />

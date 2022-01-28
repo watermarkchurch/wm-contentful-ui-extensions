@@ -15,7 +15,9 @@
       "@types/webpack-env"
     ],
     "baseUrl": ".",
-    "paths": { "*": ["@types/*"] },
+    "paths": {
+      "*": ["@types/*"],
+    },
 
     /* preact */
     "jsx": "react",
