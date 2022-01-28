@@ -1,12 +1,10 @@
-
 import {h, render} from 'preact'
 import { injectBootstrap } from '../lib/utils'
-import { Farkle } from './farkle'
+import App from './app'
 
 $(document).ready(() => {
   injectBootstrap()
 
-  // render without UI extension sdk for now
-  render(<Farkle />,
+  render(<App />,
     document.getElementById('react-root')!)
 })
