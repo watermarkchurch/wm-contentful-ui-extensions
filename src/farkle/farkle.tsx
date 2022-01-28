@@ -1,10 +1,8 @@
 import type {} from 'bootstrap'
-import {Component, createRef, h, render} from 'preact'
+import {Component, createRef, h} from 'preact'
 import Die from '../../vendor/react-dice-complete/src/Die'
 
 import '../../vendor/react-dice-complete/src/styles.scss'
-import { AsyncErrorHandler } from '../lib/async-error-handler'
-import { injectBootstrap } from '../lib/utils'
 import { IScore, scoreRoll } from './scoring'
 import './style.scss'
 
@@ -53,7 +51,6 @@ const InitialDice = () => {
 }
 
 export class Farkle extends Component<IProps, IAppState> {
-  private readonly errorHandler = new AsyncErrorHandler(this)
   private diceRef = createRef()
 
   private dice = new Array(6)
@@ -404,14 +401,6 @@ export class Farkle extends Component<IProps, IAppState> {
     })
   }
 }
-
-$(document).ready(() => {
-  injectBootstrap()
-
-  // render without UI extension sdk for now
-  render(<Farkle />,
-    document.getElementById('react-root')!)
-})
 
 function randomBetween(min: number, max: number) {
   return Math.random() * (max - min) + min
